@@ -45,50 +45,46 @@
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
-const SUPABASE_URL = '__SUPABASE_URL__';
-const SUPABASE_ANON_KEY = '__SUPABASE_ANON_KEY__';
-const supabase = SUPABASE_URL !== '__SUPABASE_URL__' ? createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
+var SB_URL = '__SUPABASE_URL__';
+var SB_KEY = '__SUPABASE_ANON_KEY__';
+var sb = (SB_URL !== '__SUPABASE_URL__' && typeof createClient !== 'undefined') ? createClient(SB_URL, SB_KEY) : null;
 
-async function loadReports(filter = 'all') {
-  const list = document.getElementById('report-list');
-  if (!supabase) {
-    list.innerHTML = '<div class="empty">⚠️ Supabase 未配置，请检查环境变量</div>';
-    return;
+async function loadReports(filter) {
+  filter = filter || 'all';
+  var list = document.getElementById('report-list');
+  if (!sb) { list.innerHTML = '<div class="empty">⚠️ Supabase 未配置，请检查环境变量</div>'; return; }
+  var allData = [];
+  try {
+    var result = await sb.from('reports').select('*').order('created_at', { ascending: false });
+    if (result.error) throw result.error;
+    allData = result.data || [];
+  } catch(e) {
+    list.innerHTML = '<div class="empty">加载失败: ' + (e.message || e) + '</div>'; return;
   }
-  const { data, error } = await supabase.from('reports').select('*').order('created_at', { ascending: false });
-  if (error) { list.innerHTML = `<div class="empty">加载失败: ${error.message}</div>`; return; }
-  if (!data || data.length === 0) { list.innerHTML = '<div class="empty">暂无训练报告，点击 + 创建第一个</div>'; return; }
-  const filtered = filter === 'all' ? data : data.filter(r => filter === 'done' ? r.status === 'done' : r.status !== 'done');
-  list.innerHTML = filtered.map(r => `
-    <div class="report-card" onclick="location.href='coach.html?id=${r.id}'">
-      <div class="report-info">
-        <div class="student">${r.student_name || '未命名学员'}</div>
-        <div class="meta">
-          <span>📅 ${r.session_date || '-'}</span>
-          <span>⏱ ${r.duration || 60}分钟</span>
-          <span>🎯 ${r.goal || '-'}</span>
-        </div>
-      </div>
-      <span class="report-badge ${r.status === 'done' ? 'badge-done' : 'badge-pending'}">${r.status === 'done' ? '✓ 已发' : '⏳ 待发'}</span>
-    </div>
-  `).join('');
+  if (!allData.length) { list.innerHTML = '<div class="empty">暂无训练报告，点击 + 创建第一个</div>'; return; }
+  var filtered = filter === 'all' ? allData : allData.filter(function(r){ return filter === 'done' ? r.status === 'done' : r.status !== 'done'; });
+  list.innerHTML = filtered.map(function(r) {
+    return '<div class="report-card" onclick="location.href=\'coach.html?id=' + r.id + '\'">' +
+      '<div class="report-info"><div class="student">' + (r.student_name||'未命名') + '</div>' +
+      '<div class="meta"><span>📅 ' + (r.session_date||'-') + '</span><span>⏱ ' + (r.duration||60) + '分钟</span><span>🎯 ' + (r.goal||'-') + '</span></div></div>' +
+      '<span class="report-badge ' + (r.status==='done'?'badge-done':'badge-pending') + '">' + (r.status==='done'?'✓ 已发':'⏳ 待发') + '</span></div>';
+  }).join('');
 }
 
 function showTab(filter) {
-  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(function(t){ t.classList.remove('active'); });
   event.target.classList.add('active');
   loadReports(filter);
 }
 
 async function init() {
-  if (supabase) {
-    const { data } = await supabase.auth.getSession();
-    if (data.session) {
-      const user = data.session.user;
-      document.getElementById('coach-name').textContent = `教练端 · ${user.email}`;
-    }
+  if (sb) {
+    try {
+      var sess = await sb.auth.getSession();
+      if (sess.data.session) document.getElementById('coach-name').textContent = '教练端 · ' + sess.data.session.user.email;
+    } catch(e){}
   }
-  loadReports();
+  loadReports('all');
 }
 init();
 </script>

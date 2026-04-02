@@ -62,108 +62,96 @@
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
-const SUPABASE_URL = '__SUPABASE_URL__';
-const SUPABASE_ANON_KEY = '__SUPABASE_ANON_KEY__';
-const supabase = SUPABASE_URL !== '__SUPABASE_URL__' ? createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
+var SB_URL = '__SUPABASE_URL__';
+var SB_KEY = '__SUPABASE_ANON_KEY__';
+var sb = (SB_URL !== '__SUPABASE_URL__' && typeof createClient !== 'undefined') ? createClient(SB_URL, SB_KEY) : null;
 
-function getReportId() {
-  return new URLSearchParams(window.location.search).get('id');
-}
+function getReportId() { return new URLSearchParams(window.location.search).get('id'); }
+
+function esc(s) { return (s||'').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 
 function renderReport(r) {
-  const data = r.report_data || {};
-  const exercises = data.exercises || [];
-  const metrics = data.metrics || {};
-  const comments = data.comments || {};
-  const nextSession = data.next_session || {};
+  var data = r.report_data || {};
+  var exercises = data.exercises || [];
+  var metrics = data.metrics || {};
+  var comments = data.comments || {};
+  var nextSession = data.next_session || {};
+  var exHtml = exercises.map(function(ex){
+    return '<tr><td><span class="module-tag">'+esc(ex.module)+'</span></td><td>'+esc(ex.name)+'</td><td>'+esc(ex.sets)+'</td><td>'+esc(ex.weight)+'</td><td><span class="done-badge">✓</span></td></tr>';
+  }).join('');
+  document.getElementById('report-content').innerHTML = [
+    '<div class="report-card">',
+      '<div class="card-header">',
+        '<div class="session-tag">第 '+(r.session_number||1)+' 次课</div>',
+        '<div class="student-name">'+esc(r.student_name)+'</div>',
+        '<div class="session-meta">',
+          '<span>📅 '+(r.session_date||'-')+'</span>',
+          '<span>⏱ '+(r.duration||60)+'分钟</span>',
+          '<span>📍 '+(r.location||'器械区')+'</span>',
+          '<span>🎯 '+(r.goal||'-')+'</span>',
+        '</div>',
+      '</div>',
+      '<div class="section"><div class="section-title"><span class="dot"></span>训练内容</div>',
+        '<table class="training-table"><thead><tr><th>模块</th><th>动作</th><th>组数/时长</th><th>重量</th><th>完成</th></tr></thead><tbody>'+exHtml+'</tbody></table>',
+      '</div>',
+      '<div class="section"><div class="section-title"><span class="dot"></span>本次体测数据</div><div class="metrics-grid">',
+        '<div class="metric-item"><div class="metric-label">体重</div><div class="metric-value">'+esc(metrics.weight||'-')+' <span class="metric-unit">kg</span></div></div>',
+        '<div class="metric-item"><div class="metric-label">体脂率</div><div class="metric-value">'+esc(metrics.bodyfat||'-')+' <span class="metric-unit">%</span></div></div>',
+        '<div class="metric-item"><div class="metric-label">最大重量</div><div class="metric-value highlight">'+esc(metrics.max_weight||'-')+' <span class="metric-unit">kg</span></div></div>',
+        '<div class="metric-item"><div class="metric-label">有氧时长</div><div class="metric-value">'+esc(metrics.cardio_time||'-')+' <span class="metric-unit">min</span></div></div>',
+        '<div class="metric-item"><div class="metric-label">动作评分</div><div class="metric-value highlight">'+esc(metrics.action_score||'-')+' <span class="metric-unit">分</span></div></div>',
+        '<div class="metric-item"><div class="metric-label">状态评分</div><div class="metric-value highlight">'+esc(metrics.status_score||'-')+' <span class="metric-unit">分</span></div></div>',
+      '</div></div>',
+      '<div class="section"><div class="section-title"><span class="dot"></span>教练评语</div><div class="comment-box">',
+        '<div class="comment-row"><div class="comment-label">亮点</div><div class="comment-text">'+esc(comments.highlight||'暂无')+'</div></div>',
+        '<div class="comment-row"><div class="comment-label">待提升</div><div class="comment-text">'+esc(comments.improve||'暂无')+'</div></div>',
+        '<div class="comment-row"><div class="comment-label">关键提示</div><div class="comment-text">'+esc(comments.tip||'暂无')+'</div></div>',
+        '<div class="comment-row"><div class="comment-label">营养建议</div><div class="comment-text">'+esc(comments.nutrition||'暂无')+'</div></div>',
+      '</div></div>',
+      '<div class="section"><div class="section-title"><span class="dot"></span>下节计划</div>',
+        '<div class="next-session"><div class="next-info"><div class="next-date">📅 '+(nextSession.date||'待定')+'</div><div class="next-focus">🎯 '+(nextSession.focus||'下次重点：全身综合训练')+'</div></div><button class="next-btn">已预约 ✓</button></div>',
+      '</div>',
+      '<div class="section"><div class="section-title"><span class="dot"></span>教练留言</div>',
+        '<div class="coach-note">💬 '+(comments.coach_note||'继续加油！')+'</div>',
+      '</div>',
+      '<div class="card-footer">',
+        '<div class="coach-info">教练：<strong>'+esc(r.coach_name||'教练')+'</strong> · '+(r.session_date||'')+'</div>',
+        '<div class="action-btns">',
+          '<button class="btn-delete" id="del-btn">🗑 删除</button>',
+          '<button class="btn-edit" id="edit-btn">✏️ 修改</button>',
+          '<button class="btn-share" id="share-btn">📤 发送给学员</button>',
+        '</div>',
+      '</div>',
+    '</div>'
+  ].join('');
 
-  document.getElementById('report-content').innerHTML = `
-    <div class="report-card">
-      <div class="card-header">
-        <div class="session-tag">第 ${r.session_number || 1} 次课</div>
-        <div class="student-name">${r.student_name || '学员'}</div>
-        <div class="session-meta">
-          <span>📅 ${r.session_date || '-'}</span>
-          <span>⏱ ${r.duration || 60}分钟</span>
-          <span>📍 ${r.location || '器械区'}</span>
-          <span>🎯 ${r.goal || '-'}</span>
-        </div>
-      </div>
-      <div class="section">
-        <div class="section-title"><span class="dot"></span>训练内容</div>
-        <table class="training-table">
-          <thead><tr><th>模块</th><th>动作</th><th>组数/时长</th><th>重量</th><th>完成</th></tr></thead>
-          <tbody>
-            ${exercises.map(ex => `<tr><td><span class="module-tag">${ex.module||'-'}</span></td><td>${ex.name||'-'}</td><td>${ex.sets||'-'}</td><td>${ex.weight||'-'}</td><td><span class="done-badge">✓</span></td></tr>`).join('')}
-          </tbody>
-        </table>
-      </div>
-      <div class="section">
-        <div class="section-title"><span class="dot"></span>本次体测数据</div>
-        <div class="metrics-grid">
-          <div class="metric-item"><div class="metric-label">体重</div><div class="metric-value">${metrics.weight||'-'} <span class="metric-unit">kg</span></div></div>
-          <div class="metric-item"><div class="metric-label">体脂率</div><div class="metric-value">${metrics.bodyfat||'-'} <span class="metric-unit">%</span></div></div>
-          <div class="metric-item"><div class="metric-label">最大重量</div><div class="metric-value highlight">${metrics.max_weight||'-'} <span class="metric-unit">kg</span></div></div>
-          <div class="metric-item"><div class="metric-label">有氧时长</div><div class="metric-value">${metrics.cardio_time||'-'} <span class="metric-unit">min</span></div></div>
-          <div class="metric-item"><div class="metric-label">动作评分</div><div class="metric-value highlight">${metrics.action_score||'-'} <span class="metric-unit">分</span></div></div>
-          <div class="metric-item"><div class="metric-label">状态评分</div><div class="metric-value highlight">${metrics.status_score||'-'} <span class="metric-unit">分</span></div></div>
-        </div>
-      </div>
-      <div class="section">
-        <div class="section-title"><span class="dot"></span>教练评语</div>
-        <div class="comment-box">
-          <div class="comment-row"><div class="comment-label">亮点</div><div class="comment-text">${comments.highlight||'暂无'}</div></div>
-          <div class="comment-row"><div class="comment-label">待提升</div><div class="comment-text">${comments.improve||'暂无'}</div></div>
-          <div class="comment-row"><div class="comment-label">关键提示</div><div class="comment-text">${comments.tip||'暂无'}</div></div>
-          <div class="comment-row"><div class="comment-label">营养建议</div><div class="comment-text">${comments.nutrition||'暂无'}</div></div>
-        </div>
-      </div>
-      <div class="section">
-        <div class="section-title"><span class="dot"></span>下节计划</div>
-        <div class="next-session">
-          <div class="next-info">
-            <div class="next-date">📅 ${nextSession.date||'待定'}</div>
-            <div class="next-focus">🎯 ${nextSession.focus||'下次重点：全身综合训练'}</div>
-          </div>
-          <button class="next-btn">已预约 ✓</button>
-        </div>
-      </div>
-      <div class="section">
-        <div class="section-title"><span class="dot"></span>教练留言</div>
-        <div class="coach-note">💬 ${comments.coach_note||'继续加油！'}</div>
-      </div>
-      <div class="card-footer">
-        <div class="coach-info">教练：<strong>${r.coach_name||'教练'}</strong> · ${r.session_date||'-'}</div>
-        <div class="action-btns">
-          <button class="btn-delete" onclick="deleteReport('${r.id}')">🗑 删除</button>
-          <button class="btn-edit" onclick="location.href='create.html?id=${r.id}'">✏️ 修改</button>
-          <button class="btn-share" onclick="sendReport('${r.id}')">📤 发送给学员</button>
-        </div>
-      </div>
-    </div>
-  `;
+  document.getElementById('del-btn').addEventListener('click', function(){ deleteReport(r.id); });
+  document.getElementById('edit-btn').addEventListener('click', function(){ location.href='create.html?id='+r.id; });
+  document.getElementById('share-btn').addEventListener('click', function(){ sendReport(r.id); });
 }
 
 async function deleteReport(id) {
   if (!confirm('确定删除这份报告？')) return;
-  const { error } = await supabase.from('reports').delete().eq('id', id);
-  if (error) alert('删除失败: ' + error.message);
+  var result = await sb.from('reports').delete().eq('id', id);
+  if (result.error) alert('删除失败: '+result.error.message);
   else location.href = 'index.html';
 }
 
 async function sendReport(id) {
-  const { error } = await supabase.from('reports').update({ status: 'done' }).eq('id', id);
-  if (error) alert('发送失败: ' + error.message);
+  var result = await sb.from('reports').update({ status: 'done' }).eq('id', id);
+  if (result.error) alert('发送失败: '+result.error.message);
   else { alert('已发送给学员！'); location.reload(); }
 }
 
 async function loadReport() {
-  const id = getReportId();
+  var id = getReportId();
   if (!id) { document.getElementById('report-content').innerHTML = '<div class="loading">缺少报告ID</div>'; return; }
-  if (!supabase) { document.getElementById('report-content').innerHTML = '<div class="loading">⚠️ Supabase 未配置</div>'; return; }
-  const { data, error } = await supabase.from('reports').select('*').eq('id', id).single();
-  if (error || !data) { document.getElementById('report-content').innerHTML = '<div class="loading">报告不存在或加载失败</div>'; return; }
-  renderReport(data);
+  if (!sb) { document.getElementById('report-content').innerHTML = '<div class="loading">⚠️ Supabase 未配置</div>'; return; }
+  var result = await sb.from('reports').select('*').eq('id', id).single();
+  if (result.error || !result.data) {
+    document.getElementById('report-content').innerHTML = '<div class="loading">报告不存在或加载失败</div>'; return;
+  }
+  renderReport(result.data);
 }
 loadReport();
 </script>

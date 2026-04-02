@@ -60,7 +60,7 @@
     <div class="form-section">
       <div class="section-label">训练动作</div>
       <div id="exercise-list"></div>
-      <button class="add-exercise-btn" onclick="addExercise()">+ 添加训练动作</button>
+      <button class="add-exercise-btn" id="add-ex-btn">+ 添加训练动作</button>
     </div>
     <div class="form-section">
       <div class="section-label">体测数据</div>
@@ -94,53 +94,71 @@
     </div>
     <div class="btn-row">
       <button class="btn-cancel" onclick="location.href='index.html'">取消</button>
-      <button class="btn-save" onclick="saveReport()">💾 保存报告</button>
+      <button class="btn-save" id="save-btn">💾 保存报告</button>
     </div>
   </div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
-const SUPABASE_URL = '__SUPABASE_URL__';
-const SUPABASE_ANON_KEY = '__SUPABASE_ANON_KEY__';
-const supabase = SUPABASE_URL !== '__SUPABASE_URL__' ? createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
-let editingId = null;
-let exerciseCount = 0;
+var SB_URL = '__SUPABASE_URL__';
+var SB_KEY = '__SUPABASE_ANON_KEY__';
+var sb = (SB_URL !== '__SUPABASE_URL__' && typeof createClient !== 'undefined') ? createClient(SB_URL, SB_KEY) : null;
+
+var editingId = null;
+var exerciseCount = 0;
 
 function getReportId() { return new URLSearchParams(window.location.search).get('id'); }
 
-function addExercise(module='力量',name='',sets='',weight='') {
-  const id = exerciseCount++;
-  document.getElementById('exercise-list').insertAdjacentHTML('beforeend', `
-    <div class="exercise-item" id="ex-${id}">
-      <div class="exercise-header"><span>动作 ${exerciseCount}</span><button class="remove-btn" onclick="removeExercise(${id})">×</button></div>
-      <div class="exercise-row">
-        <select class="ex-module"><option value="热身">热身</option><option value="力量" selected>力量</option><option value="有氧">有氧</option><option value="拉伸">拉伸</option><option value="核心">核心</option></select>
-        <input type="text" class="ex-name" placeholder="动作名称" value="${name}">
-        <input type="text" class="ex-sets" placeholder="组数/时长" value="${sets}">
-        <input type="text" class="ex-weight" placeholder="重量" value="${weight}">
-      </div>
-    </div>
-  `);
-  if (module !== '力量') document.querySelector(`#ex-${id} .ex-module`).value = module;
+function addExercise(module, name, sets, weight) {
+  module = module || '力量'; name = name || ''; sets = sets || ''; weight = weight || '';
+  var id = exerciseCount++;
+  var el = document.createElement('div');
+  el.className = 'exercise-item';
+  el.id = 'ex-' + id;
+  el.innerHTML =
+    '<div class="exercise-header"><span>动作 ' + exerciseCount + '</span><button class="remove-btn" onclick="removeExercise(' + id + ')">×</button></div>' +
+    '<div class="exercise-row">' +
+      '<select class="ex-module"><option value="热身">热身</option><option value="力量" selected>力量</option><option value="有氧">有氧</option><option value="拉伸">拉伸</option><option value="核心">核心</option></select>' +
+      '<input type="text" class="ex-name" placeholder="动作名称" value="">' +
+      '<input type="text" class="ex-sets" placeholder="组数/时长" value="">' +
+      '<input type="text" class="ex-weight" placeholder="重量" value="">' +
+    '</div>';
+  if (module !== '力量') el.querySelector('.ex-module').value = module;
+  if (name) el.querySelector('.ex-name').value = name;
+  if (sets) el.querySelector('.ex-sets').value = sets;
+  if (weight) el.querySelector('.ex-weight').value = weight;
+  document.getElementById('exercise-list').appendChild(el);
 }
 
-function removeExercise(id) { document.getElementById(`ex-${id}`).remove(); }
+function removeExercise(id) {
+  var el = document.getElementById('ex-' + id);
+  if (el) el.parentNode.removeChild(el);
+}
 
 function getExercises() {
-  return Array.from(document.querySelectorAll('.exercise-item')).map(item => ({
-    module: item.querySelector('.ex-module').value,
-    name: item.querySelector('.ex-name').value,
-    sets: item.querySelector('.ex-sets').value,
-    weight: item.querySelector('.ex-weight').value
-  }));
+  var items = document.querySelectorAll('.exercise-item');
+  var result = [];
+  for (var i = 0; i < items.length; i++) {
+    var item = items[i];
+    result.push({
+      module: item.querySelector('.ex-module').value,
+      name: item.querySelector('.ex-name').value,
+      sets: item.querySelector('.ex-sets').value,
+      weight: item.querySelector('.ex-weight').value
+    });
+  }
+  return result;
 }
 
-async function saveReport() {
-  const studentName = document.getElementById('student_name').value.trim();
+document.getElementById('add-ex-btn').addEventListener('click', function() { addExercise(); });
+
+document.getElementById('save-btn').addEventListener('click', async function() {
+  var studentName = document.getElementById('student_name').value.trim();
   if (!studentName) { alert('请输入学员姓名'); return; }
-  if (!supabase) { alert('Supabase 未配置，无法保存'); return; }
-  const report = {
+  if (!sb) { alert('Supabase 未配置，无法保存'); return; }
+
+  var report = {
     student_name: studentName,
     session_number: parseInt(document.getElementById('session_number').value) || 1,
     session_date: document.getElementById('session_date').value,
@@ -172,16 +190,26 @@ async function saveReport() {
       }
     }
   };
-  const result = editingId
-    ? await supabase.from('reports').update(report).eq('id', editingId)
-    : await supabase.from('reports').insert([report]);
-  if (result.error) alert('保存失败: ' + result.error.message);
-  else { alert(editingId ? '报告已更新！' : '报告已创建！'); location.href = 'index.html'; }
-}
+
+  var result;
+  if (editingId) {
+    result = await sb.from('reports').update(report).eq('id', editingId);
+  } else {
+    result = await sb.from('reports').insert([report]);
+  }
+
+  if (result.error) {
+    alert('保存失败: ' + result.error.message);
+  } else {
+    alert(editingId ? '报告已更新！' : '报告已创建！');
+    location.href = 'index.html';
+  }
+});
 
 async function loadExistingReport(id) {
-  const { data } = await supabase.from('reports').select('*').eq('id', id).single();
-  if (!data) return;
+  var result = await sb.from('reports').select('*').eq('id', id).single();
+  if (result.error || !result.data) return;
+  var data = result.data;
   editingId = id;
   document.getElementById('page-title').textContent = '✏️ 编辑训练报告';
   document.getElementById('student_name').value = data.student_name || '';
@@ -190,21 +218,25 @@ async function loadExistingReport(id) {
   document.getElementById('duration').value = data.duration || 60;
   document.getElementById('goal').value = data.goal || '减脂';
   document.getElementById('location').value = data.location || '器械区';
-  const rd = data.report_data || {};
-  (rd.exercises || []).forEach(ex => addExercise(ex.module, ex.name, ex.sets, ex.weight));
-  const m = rd.metrics || {};
-  ['weight','bodyfat','max_weight','cardio_time','action_score','status_score'].forEach(k => document.getElementById(k).value = m[k] || '');
-  const c = rd.comments || {};
-  ['highlight','improve','tip','nutrition','coach_note'].forEach(k => document.getElementById(k).value = c[k] || '');
-  const ns = rd.next_session || {};
+  var rd = data.report_data || {};
+  var exs = rd.exercises || [];
+  if (exs.length === 0) addExercise(); else exs.forEach(function(ex){ addExercise(ex.module, ex.name, ex.sets, ex.weight); });
+  var m = rd.metrics || {};
+  ['weight','bodyfat','max_weight','cardio_time','action_score','status_score'].forEach(function(k){ document.getElementById(k).value = m[k] || ''; });
+  var c = rd.comments || {};
+  ['highlight','improve','tip','nutrition','coach_note'].forEach(function(k){ document.getElementById(k).value = c[k] || ''; });
+  var ns = rd.next_session || {};
   document.getElementById('next_date').value = ns.date || '';
   document.getElementById('next_focus').value = ns.focus || '';
 }
 
 async function init() {
-  const id = getReportId();
-  if (id) await loadExistingReport(id);
-  else addExercise();
+  var id = getReportId();
+  if (id) {
+    await loadExistingReport(id);
+  } else {
+    addExercise();
+  }
   if (!document.getElementById('session_date').value)
     document.getElementById('session_date').value = new Date().toISOString().split('T')[0];
 }
