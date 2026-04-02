@@ -1,0 +1,5 @@
+{
+  "buildCommand": "node inject.js",
+  "outputDirectory": "dist",
+  "framework": null
+}

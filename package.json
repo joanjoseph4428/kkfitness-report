@@ -1,0 +1,8 @@
+{
+  "name": "kkfitness-report",
+  "version": "1.0.0",
+  "description": "健身训练报告系统",
+  "scripts": {
+    "build": "node inject.js"
+  }
+}
