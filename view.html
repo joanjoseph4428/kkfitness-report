@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
@@ -8,9 +8,6 @@
   * { margin: 0; padding: 0; box-sizing: border-box; }
   body { font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei', sans-serif; background: #f5f6fa; min-height: 100vh; padding: 24px; }
   .container { max-width: 680px; margin: 0 auto; }
-  .header { text-align: center; margin-bottom: 24px; }
-  .header h1 { font-size: 20px; color: #1a1a2e; font-weight: 700; margin-bottom: 4px; }
-  .header p { font-size: 13px; color: #888; }
   .report-card { background: #fff; border-radius: 16px; box-shadow: 0 4px 24px rgba(0,0,0,0.06); overflow: hidden; margin-bottom: 16px; }
   .card-header { background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); color: #fff; padding: 24px 28px 20px; }
   .session-tag { display: inline-block; background: rgba(255,255,255,0.15); border-radius: 20px; padding: 4px 14px; font-size: 12px; margin-bottom: 10px; }
@@ -43,29 +40,29 @@
   .coach-note { background: #fffbeb; border-left: 3px solid #f59e0b; border-radius: 0 8px 8px 0; padding: 14px 16px; font-size: 14px; color: #92400e; line-height: 1.6; }
   .footer { text-align: center; padding: 16px; font-size: 12px; color: #aaa; }
   .loading { text-align: center; padding: 80px 40px; color: #aaa; font-size: 14px; }
-  .error { text-align: center; padding: 80px 40px; color: #dc2626; font-size: 14px; }
 </style>
 </head>
 <body>
 <div class="container">
-  <div id="content"><div class="loading">Loading report...</div></div>
+  <div id="content"><div class="loading">Loading...</div></div>
 </div>
 
 <script>
 var MASTER_KEY = '$2a$10$xtOHk9uH7fTP9zDGqQ5FhObZPimIVOe39.U7RjutviV5cNeytzgbi';
-var BIN_ID = localStorage.getItem('kkfitness_bin_id');
-var BIN_URL = 'https://api.jsonbin.io/v2/b/' + BIN_ID;
+
+function getBinUrl() { return 'https://api.jsonbin.io/v2/b/' + localStorage.getItem('kkfitness_bin_id'); }
 
 function getReportId() { return new URLSearchParams(window.location.search).get('id'); }
 function esc(s) { return (s||'').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 
 async function jsonbinFetch(method, path, body) {
+  var binUrl = getBinUrl();
   var opts = {
     method: method,
     headers: { 'X-Master-Key': MASTER_KEY, 'Content-Type': 'application/json' }
   };
   if (body) opts.body = JSON.stringify(body);
-  var r = await fetch(BIN_URL + path, opts);
+  var r = await fetch(binUrl + path, opts);
   var text = await r.text();
   var data;
   try { data = JSON.parse(text); } catch(e) { data = text; }
@@ -88,7 +85,7 @@ function renderReport(r) {
   var exHtml = exercises.map(function(ex){
     return '<tr><td><span class="module-tag">'+esc(ex.module)+'</span></td><td>'+esc(ex.name)+'</td><td>'+esc(ex.sets)+'</td><td>'+esc(ex.weight)+'</td><td><span class="done-badge">OK</span></td></tr>';
   }).join('');
-  document.title = esc(r.student_name) + ' - Training Report';
+  document.title = esc(r.student_name) + ' - Report';
   document.getElementById('content').innerHTML = [
     '<div class="report-card">',
       '<div class="card-header">',
@@ -100,26 +97,26 @@ function renderReport(r) {
           '<span>'+(r.location||'Gym')+'</span>',
         '</div>',
       '</div>',
-      '<div class="section"><div class="section-title"><span class="dot"></span>Training Content</div>',
+      '<div class="section"><div class="section-title"><span class="dot"></span>Training</div>',
         '<table class="training-table"><thead><tr><th>Module</th><th>Exercise</th><th>Sets/Time</th><th>Weight</th><th>Done</th></tr></thead><tbody>'+exHtml+'</tbody></table>',
       '</div>',
       '<div class="section"><div class="section-title"><span class="dot"></span>Metrics</div><div class="metrics-grid">',
         '<div class="metric-item"><div class="metric-label">Weight</div><div class="metric-value">'+esc(metrics.weight||'-')+' <span class="metric-unit">kg</span></div></div>',
         '<div class="metric-item"><div class="metric-label">Body Fat</div><div class="metric-value">'+esc(metrics.bodyfat||'-')+' <span class="metric-unit">%</span></div></div>',
         '<div class="metric-item"><div class="metric-label">Max Weight</div><div class="metric-value highlight">'+esc(metrics.max_weight||'-')+' <span class="metric-unit">kg</span></div></div>',
-        '<div class="metric-item"><div class="metric-label">Cardio Time</div><div class="metric-value">'+esc(metrics.cardio_time||'-')+' <span class="metric-unit">min</span></div></div>',
+        '<div class="metric-item"><div class="metric-label">Cardio</div><div class="metric-value">'+esc(metrics.cardio_time||'-')+' <span class="metric-unit">min</span></div></div>',
         '<div class="metric-item"><div class="metric-label">Action Score</div><div class="metric-value highlight">'+esc(metrics.action_score||'-')+'</div></div>',
         '<div class="metric-item"><div class="metric-label">Status Score</div><div class="metric-value highlight">'+esc(metrics.status_score||'-')+'</div></div>',
       '</div></div>',
       '<div class="section"><div class="section-title"><span class="dot"></span>Feedback</div><div class="comment-box">',
-        '<div class="comment-row"><div class="comment-label">Highlight</div><div class="comment-text">'+esc(comments.highlight||'Good performance!')+'</div></div>',
-        '<div class="comment-row"><div class="comment-label">Improve</div><div class="comment-text">'+esc(comments.improve||'Keep going!')+'</div></div>',
+        '<div class="comment-row"><div class="comment-label">Highlight</div><div class="comment-text">'+esc(comments.highlight||'Good!')+'</div></div>',
+        '<div class="comment-row"><div class="comment-label">Improve</div><div class="comment-text">'+esc(comments.improve||'') +'</div></div>',
         '<div class="comment-row"><div class="comment-label">Tip</div><div class="comment-text">'+esc(comments.tip||'') +'</div></div>',
         '<div class="comment-row"><div class="comment-label">Nutrition</div><div class="comment-text">'+esc(comments.nutrition||'') +'</div></div>',
       '</div></div>',
-      nextSession.date ? '<div class="section"><div class="section-title"><span class="dot"></span>Next Session</div><div class="next-session"><div class="next-date">'+esc(nextSession.date)+'</div><div class="next-focus">'+esc(nextSession.focus||'General training')+'</div></div></div>' : '',
+      nextSession.date ? '<div class="section"><div class="section-title"><span class="dot"></span>Next Session</div><div class="next-session"><div class="next-date">'+esc(nextSession.date)+'</div><div class="next-focus">'+esc(nextSession.focus||'General')+'</div></div></div>' : '',
       '<div class="section"><div class="section-title"><span class="dot"></span>Coach Note</div>',
-        '<div class="coach-note">'+esc(comments.coach_note||'Keep it up, you are making great progress!')+'</div>',
+        '<div class="coach-note">'+esc(comments.coach_note||'Keep it up!')+'</div>',
       '</div>',
     '</div>',
     '<div class="footer">Coach: '+esc(r.coach_name||'Coach')+' | '+(r.session_date||'')+'</div>'
@@ -128,10 +125,10 @@ function renderReport(r) {
 
 async function loadReport() {
   var id = getReportId();
-  if (!id) { document.getElementById('content').innerHTML = '<div class="error">Missing report ID</div>'; return; }
+  if (!id) { document.getElementById('content').innerHTML = '<div class="loading">Missing ID</div>'; return; }
   var reports = await getReports();
   var r = reports.find(function(r){ return r.id == id; });
-  if (!r) { document.getElementById('content').innerHTML = '<div class="error">Report not found</div>'; return; }
+  if (!r) { document.getElementById('content').innerHTML = '<div class="loading">Report not found</div>'; return; }
   renderReport(r);
 }
 loadReport();

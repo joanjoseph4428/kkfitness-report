@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
@@ -57,19 +57,20 @@
 
 <script>
 var MASTER_KEY = '$2a$10$xtOHk9uH7fTP9zDGqQ5FhObZPimIVOe39.U7RjutviV5cNeytzgbi';
-var BIN_ID = localStorage.getItem('kkfitness_bin_id');
-var BIN_URL = 'https://api.jsonbin.io/v2/b/' + BIN_ID;
+
+function getBinUrl() { return 'https://api.jsonbin.io/v2/b/' + localStorage.getItem('kkfitness_bin_id'); }
 
 function getReportId() { return new URLSearchParams(window.location.search).get('id'); }
 function esc(s) { return (s||'').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 
 async function jsonbinFetch(method, path, body) {
+  var binUrl = getBinUrl();
   var opts = {
     method: method,
     headers: { 'X-Master-Key': MASTER_KEY, 'Content-Type': 'application/json' }
   };
   if (body) opts.body = JSON.stringify(body);
-  var r = await fetch(BIN_URL + path, opts);
+  var r = await fetch(binUrl + path, opts);
   var text = await r.text();
   var data;
   try { data = JSON.parse(text); } catch(e) { data = text; }
@@ -84,7 +85,7 @@ async function getReports() {
 }
 
 async function saveReports(reports) {
-  var r = await fetch(BIN_URL, {
+  var r = await fetch(getBinUrl(), {
     method: 'PUT',
     headers: { 'X-Master-Key': MASTER_KEY, 'Content-Type': 'application/json' },
     body: JSON.stringify({ reports: reports })
@@ -130,16 +131,16 @@ function renderReport(r) {
         '<div class="comment-row"><div class="comment-label">Tip</div><div class="comment-text">'+esc(comments.tip||'None')+'</div></div>',
         '<div class="comment-row"><div class="comment-label">Nutrition</div><div class="comment-text">'+esc(comments.nutrition||'None')+'</div></div>',
       '</div></div>',
-      nextSession.date ? '<div class="section"><div class="section-title"><span class="dot"></span>Next Session</div><div class="next-session"><div class="next-info"><div class="next-date">'+esc(nextSession.date)+'</div><div class="next-focus">'+esc(nextSession.focus||'General training')+'</div></div><button class="next-btn">Booked</button></div></div>' : '',
+      nextSession.date ? '<div class="section"><div class="section-title"><span class="dot"></span>Next Session</div><div class="next-session"><div class="next-info"><div class="next-date">'+esc(nextSession.date)+'</div><div class="next-focus">'+esc(nextSession.focus||'General')+'</div></div><button class="next-btn">Booked</button></div></div>' : '',
       '<div class="section"><div class="section-title"><span class="dot"></span>Coach Note</div>',
-        '<div class="coach-note">'+esc(comments.coach_note||'Keep it up, you are making good progress!')+'</div>',
+        '<div class="coach-note">'+esc(comments.coach_note||'Keep it up!')+'</div>',
       '</div>',
       '<div class="card-footer">',
         '<div class="coach-info">Coach: <strong>'+esc(r.coach_name||'Coach')+'</strong></div>',
         '<div class="action-btns">',
           '<button class="btn-delete" id="del-btn">Delete</button>',
           '<button class="btn-edit" id="edit-btn">Edit</button>',
-          '<button class="btn-share" id="share-btn">Share Link</button>',
+          '<button class="btn-share" id="share-btn">Share</button>',
         '</div>',
       '</div>',
     '</div>'
@@ -172,15 +173,15 @@ async function shareReport(id) {
     btn.textContent = 'Link Copied!';
     btn.style.background = '#059669';
   } catch(e) {
-    alert('Marked as sent! Share link: ' + shareUrl);
+    alert('Sent! Share: ' + shareUrl);
   }
 }
 
 async function loadReport() {
   var id = getReportId();
-  if (!id) { document.getElementById('report-content').innerHTML = '<div class="loading">Missing report ID</div>'; return; }
+  if (!id) { document.getElementById('report-content').innerHTML = '<div class="loading">Missing ID</div>'; return; }
   var reports = await getReports();
-  var r = reports.find(function(r){ return r.id === id; });
+  var r = reports.find(function(r){ return r.id == id; });
   if (!r) { document.getElementById('report-content').innerHTML = '<div class="loading">Report not found</div>'; return; }
   renderReport(r);
 }

@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
@@ -34,24 +34,24 @@
 </head>
 <body>
 <div class="container">
-  <div class="back-btn" onclick="location.href='index.html'">Back to List</div>
-  <div class="page-title"><h1 id="page-title">+ Create Training Report</h1></div>
+  <div class="back-btn" onclick="location.href='index.html'">Back</div>
+  <div class="page-title"><h1 id="page-title">+ Create Report</h1></div>
   <div class="form-card">
     <div class="form-section">
       <div class="section-label">Basic Info</div>
       <div class="form-row">
         <div class="form-group"><label>Student Name</label><input type="text" id="student_name" placeholder="e.g. Zhang San" required></div>
-        <div class="form-group"><label>Session Number</label><input type="number" id="session_number" value="1" min="1"></div>
+        <div class="form-group"><label>Session</label><input type="number" id="session_number" value="1" min="1"></div>
       </div>
       <div class="form-row">
-        <div class="form-group"><label>Session Date</label><input type="date" id="session_date"></div>
+        <div class="form-group"><label>Date</label><input type="date" id="session_date"></div>
         <div class="form-group"><label>Duration (min)</label><input type="number" id="duration" value="60" min="1"></div>
       </div>
       <div class="form-row">
         <div class="form-group"><label>Goal</label>
           <select id="goal"><option value="Fat Loss">Fat Loss</option><option value="Muscle Gain">Muscle Gain</option><option value="Shaping">Shaping</option><option value="Fitness">Fitness</option><option value="Rehab">Rehab</option></select>
         </div>
-        <div class="form-group"><label>Location</label><input type="text" id="location" placeholder="e.g. Gym" value="Gym"></div>
+        <div class="form-group"><label>Location</label><input type="text" id="location" value="Gym"></div>
       </div>
     </div>
     <div class="form-section">
@@ -67,7 +67,7 @@
       </div>
       <div class="form-row">
         <div class="form-group"><label>Max Weight (kg)</label><input type="number" id="max_weight" placeholder="e.g. 80"></div>
-        <div class="form-group"><label>Cardio Time (min)</label><input type="number" id="cardio_time" placeholder="e.g. 20"></div>
+        <div class="form-group"><label>Cardio (min)</label><input type="number" id="cardio_time" placeholder="e.g. 20"></div>
       </div>
       <div class="form-row">
         <div class="form-group"><label>Action Score (1-10)</label><input type="number" id="action_score" min="1" max="10" placeholder="e.g. 8"></div>
@@ -76,9 +76,9 @@
     </div>
     <div class="form-section">
       <div class="section-label">Feedback</div>
-      <div class="form-group" style="margin-bottom:12px"><label>Highlight</label><textarea id="highlight" placeholder="What went well today..."></textarea></div>
-      <div class="form-group" style="margin-bottom:12px"><label>Improve</label><textarea id="improve" placeholder="What needs improvement..."></textarea></div>
-      <div class="form-group" style="margin-bottom:12px"><label>Tip</label><textarea id="tip" placeholder="Key tips or notes..."></textarea></div>
+      <div class="form-group" style="margin-bottom:12px"><label>Highlight</label><textarea id="highlight" placeholder="What went well..."></textarea></div>
+      <div class="form-group" style="margin-bottom:12px"><label>Improve</label><textarea id="improve" placeholder="What needs work..."></textarea></div>
+      <div class="form-group" style="margin-bottom:12px"><label>Tip</label><textarea id="tip" placeholder="Key tips..."></textarea></div>
       <div class="form-group"><label>Nutrition</label><textarea id="nutrition" placeholder="Nutrition advice..."></textarea></div>
     </div>
     <div class="form-section">
@@ -87,7 +87,7 @@
         <div class="form-group"><label>Next Date</label><input type="date" id="next_date"></div>
         <div class="form-group"><label>Next Focus</label><input type="text" id="next_focus" placeholder="e.g. Chest + Cardio"></div>
       </div>
-      <div class="form-group"><label>Coach Note</label><textarea id="coach_note" placeholder="Encouragement for the student...">Keep it up, you are making great progress!</textarea></div>
+      <div class="form-group"><label>Coach Note</label><textarea id="coach_note" placeholder="Encouragement...">Keep it up!</textarea></div>
     </div>
     <div class="btn-row">
       <button class="btn-cancel" onclick="location.href='index.html'">Cancel</button>
@@ -98,8 +98,8 @@
 
 <script>
 var MASTER_KEY = '$2a$10$xtOHk9uH7fTP9zDGqQ5FhObZPimIVOe39.U7RjutviV5cNeytzgbi';
-var BIN_ID = localStorage.getItem('kkfitness_bin_id');
-var BIN_URL = 'https://api.jsonbin.io/v2/b/' + BIN_ID;
+
+function getBinUrl() { return 'https://api.jsonbin.io/v2/b/' + localStorage.getItem('kkfitness_bin_id'); }
 
 var editingId = null;
 var exerciseCount = 0;
@@ -107,12 +107,13 @@ var exerciseCount = 0;
 function getReportId() { return new URLSearchParams(window.location.search).get('id'); }
 
 async function jsonbinFetch(method, path, body) {
+  var binUrl = getBinUrl();
   var opts = {
     method: method,
     headers: { 'X-Master-Key': MASTER_KEY, 'Content-Type': 'application/json' }
   };
   if (body) opts.body = JSON.stringify(body);
-  var r = await fetch(BIN_URL + path, opts);
+  var r = await fetch(binUrl + path, opts);
   var text = await r.text();
   var data;
   try { data = JSON.parse(text); } catch(e) { data = text; }
@@ -127,7 +128,7 @@ async function getReports() {
 }
 
 async function saveReports(reports) {
-  var r = await fetch(BIN_URL, {
+  var r = await fetch(getBinUrl(), {
     method: 'PUT',
     headers: { 'X-Master-Key': MASTER_KEY, 'Content-Type': 'application/json' },
     body: JSON.stringify({ reports: reports })
@@ -145,7 +146,7 @@ function addExercise(module, name, sets, weight) {
     '<div class="exercise-header"><span>Exercise ' + (id+1) + '</span><button class="remove-btn" onclick="removeExercise(' + id + ')">x</button></div>' +
     '<div class="exercise-row">' +
       '<select class="ex-module"><option value="Warm Up">Warm Up</option><option value="Strength" selected>Strength</option><option value="Cardio">Cardio</option><option value="Stretch">Stretch</option><option value="Core">Core</option></select>' +
-      '<input type="text" class="ex-name" placeholder="Exercise name" value="">' +
+      '<input type="text" class="ex-name" placeholder="Name" value="">' +
       '<input type="text" class="ex-sets" placeholder="Sets/Time" value="">' +
       '<input type="text" class="ex-weight" placeholder="Weight" value="">' +
     '</div>';
@@ -180,7 +181,7 @@ document.getElementById('add-ex-btn').addEventListener('click', function() { add
 
 document.getElementById('save-btn').addEventListener('click', async function() {
   var studentName = document.getElementById('student_name').value.trim();
-  if (!studentName) { alert('Please enter student name'); return; }
+  if (!studentName) { alert('Enter student name'); return; }
 
   var report = {
     id: editingId || Date.now(),
