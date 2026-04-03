@@ -58,7 +58,8 @@ async function loadReports(filter) {
     var resp = await fetch(SB_URL + '/rest/v1/reports?select=*&order=created_at.desc', {
       headers: {
         'apikey': SB_KEY,
-        'Authorization': 'Bearer ' + SB_KEY
+        'Authorization': 'Bearer ' + SB_KEY,
+        'Prefer': 'count=exact'
       }
     });
     if (!resp.ok) throw new Error('HTTP ' + resp.status);

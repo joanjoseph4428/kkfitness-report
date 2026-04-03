@@ -215,8 +215,6 @@ document.getElementById('save-btn').addEventListener('click', async function() {
     result = await supabaseFetch('POST', 'reports', report);
   }
 
-  document.getElementById('save-btn').textContent = 'DEBUG: ' + JSON.stringify(result);
-  setTimeout(function() { document.getElementById('save-btn').textContent = '保存报告'; }, 5000);
   if (result.error) {
     alert('保存失败: ' + JSON.stringify(result.error));
   } else {

@@ -129,15 +129,19 @@ async function supabaseFetch(method, path, body) {
     headers: {
       'apikey': SB_KEY,
       'Authorization': 'Bearer ' + SB_KEY,
-      'Content-Type': 'application/json'
+      'Content-Type': 'application/json',
+      'Prefer': method === 'POST' ? 'return=representation' : 'return=minimal'
     }
   };
   if (body) opts.body = JSON.stringify(body);
   var r = await fetch(SB_URL + '/rest/v1/' + path, opts);
-  if (method === 'DELETE') return { error: r.ok ? null : await r.text() };
-  if (method === 'PATCH') return { error: r.ok ? null : await r.text() };
-  var data = await r.json();
-  if (!r.ok) return { error: data.message || r.status, data: null };
+  if (r.status === 204 || method === 'DELETE' || method === 'PATCH') {
+    return { error: r.ok ? null : await r.text(), ok: r.ok };
+  }
+  var text = await r.text();
+  var data;
+  try { data = JSON.parse(text); } catch(e) { data = text; }
+  if (!r.ok) return { error: (data && data.message) || r.status, data: null };
   return { data: data };
 }
 
