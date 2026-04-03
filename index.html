@@ -1,9 +1,9 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>训练报告 - 首页</title>
+<title>璁粌鎶ュ憡 - 棣栭〉</title>
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
   body { font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei', sans-serif; background: #f5f6fa; min-height: 100vh; padding: 24px; }
@@ -29,16 +29,16 @@
 <body>
 <div class="container">
   <div class="page-title">
-    <h1>🏋️‍♂️ 健身训练报告系统</h1>
-    <p id="coach-name">教练端 · 加载中...</p>
+    <h1>馃弸锔忊€嶁檪锔?鍋ヨ韩璁粌鎶ュ憡绯荤粺</h1>
+    <p id="coach-name">鏁欑粌绔?路 鍔犺浇涓?..</p>
   </div>
   <div class="tabs">
-    <button class="tab active" onclick="showTab('all')">全部报告</button>
-    <button class="tab" onclick="showTab('done')">已完成</button>
-    <button class="tab" onclick="showTab('pending')">待完成</button>
+    <button class="tab active" onclick="showTab('all')">鍏ㄩ儴鎶ュ憡</button>
+    <button class="tab" onclick="showTab('done')">宸插畬鎴?/button>
+    <button class="tab" onclick="showTab('pending')">寰呭畬鎴?/button>
   </div>
   <div id="report-list" class="report-list">
-    <div class="empty">正在加载训练报告...</div>
+    <div class="empty">姝ｅ湪鍔犺浇璁粌鎶ュ憡...</div>
   </div>
 </div>
 <button class="add-btn" onclick="location.href='create.html'">+</button>
@@ -51,7 +51,7 @@ async function loadReports(filter) {
   filter = filter || 'all';
   var list = document.getElementById('report-list');
   if (!SB_URL) {
-    list.innerHTML = '<div class="empty">⚠️ Supabase 未配置，请检查环境变量</div>';
+    list.innerHTML = '<div class="empty">鈿狅笍 Supabase 鏈厤缃紝璇锋鏌ョ幆澧冨彉閲?/div>';
     return;
   }
   try {
@@ -65,18 +65,18 @@ async function loadReports(filter) {
     var allData = await resp.json();
     if (!Array.isArray(allData)) allData = [];
     if (!allData.length) {
-      list.innerHTML = '<div class="empty">暂无训练报告，点击 + 创建第一个</div>';
+      list.innerHTML = '<div class="empty">鏆傛棤璁粌鎶ュ憡锛岀偣鍑?+ 鍒涘缓绗竴涓?/div>';
       return;
     }
     var filtered = filter === 'all' ? allData : allData.filter(function(r){ return filter === 'done' ? r.status === 'done' : r.status !== 'done'; });
     list.innerHTML = filtered.map(function(r) {
       return '<div class="report-card" onclick="location.href=\'coach.html?id=' + r.id + '\'">' +
-        '<div class="report-info"><div class="student">' + (r.student_name||'未命名') + '</div>' +
-        '<div class="meta"><span>📅 ' + (r.session_date||'-') + '</span><span>⏱ ' + (r.duration||60) + '分钟</span><span>🎯 ' + (r.goal||'-') + '</span></div></div>' +
-        '<span class="report-badge ' + (r.status==='done'?'badge-done':'badge-pending') + '">' + (r.status==='done'?'✓ 已发':'⏳ 待发') + '</span></div>';
+        '<div class="report-info"><div class="student">' + (r.student_name||'鏈懡鍚?) + '</div>' +
+        '<div class="meta"><span>馃搮 ' + (r.session_date||'-') + '</span><span>鈴?' + (r.duration||60) + '鍒嗛挓</span><span>馃幆 ' + (r.goal||'-') + '</span></div></div>' +
+        '<span class="report-badge ' + (r.status==='done'?'badge-done':'badge-pending') + '">' + (r.status==='done'?'鉁?宸插彂':'鈴?寰呭彂') + '</span></div>';
     }).join('');
   } catch(e) {
-    list.innerHTML = '<div class="empty">加载失败: ' + (e.message || e) + '</div>';
+    list.innerHTML = '<div class="empty">鍔犺浇澶辫触: ' + (e.message || e) + '</div>';
   }
 }
 
