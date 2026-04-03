@@ -16,8 +16,8 @@ HTML_FILES.forEach(file => {
   const src = path.join(__dirname, file);
   const dest = path.join(DEST, file);
   let content = fs.readFileSync(src, 'utf-8');
-  content = content.replace('__SUPABASE_URL__', SUPABASE_URL);
-  content = content.replace('__SUPABASE_ANON_KEY__', SUPABASE_ANON_KEY);
+  content = content.replace(/var SB_URL = '[^']*';/, `var SB_URL = '${SUPABASE_URL}';`);
+  content = content.replace(/var SB_KEY = '[^']*';/, `var SB_KEY = '${SUPABASE_ANON_KEY}';`);
   fs.writeFileSync(dest, content);
   console.log(`✓ ${file} → ${dest}`);
 });
