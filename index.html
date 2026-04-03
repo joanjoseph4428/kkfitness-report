@@ -45,9 +45,9 @@
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
-var SB_URL = '__SUPABASE_URL__';
-var SB_KEY = '__SUPABASE_ANON_KEY__';
-var sb = (SB_URL !== '__SUPABASE_URL__' && typeof createClient !== 'undefined') ? createClient(SB_URL, SB_KEY) : null;
+var SB_URL = 'https://zpuewfjhcutvnewwkqjv.supabase.co';
+var SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpwdWV3ZmpoY3V0dm5ld3drcWp2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUxMjM0NjAsImV4cCI6MjA5MDY5OTQ2MH0.vkVTXyEZY2HhHRemHZEUgSaHRb_Tc03QvuBtL_y1tgQ';
+var sb = (SB_URL && SB_KEY && typeof createClient !== 'undefined') ? createClient(SB_URL, SB_KEY) : null;
 
 async function loadReports(filter) {
   filter = filter || 'all';
