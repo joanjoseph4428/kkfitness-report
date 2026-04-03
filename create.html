@@ -218,7 +218,6 @@ document.getElementById('save-btn').addEventListener('click', async function() {
   if (result.error) {
     alert('保存失败: ' + JSON.stringify(result.error));
   } else {
-    alert(editingId ? '报告已更新！' : '报告已创建！');
     location.href = 'index.html';
   }
 });
