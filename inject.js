@@ -1,7 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 
-const HTML_FILES = ['index.html', 'coach.html', 'create.html'];
+const HTML_FILES = ['index.html', 'coach.html', 'create.html', 'view.html'];
 const DEST = 'dist';
 const SUPABASE_URL = process.env.SUPABASE_URL || '';
 const SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY || '';

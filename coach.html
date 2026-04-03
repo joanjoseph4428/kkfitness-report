@@ -154,8 +154,18 @@ async function deleteReport(id) {
 
 async function sendReport(id) {
   var result = await supabaseFetch('PATCH', 'reports?id=eq.' + id, { status: 'done' });
-  if (result.error) alert('发送失败: '+result.error);
-  else { alert('已发送！'); location.reload(); }
+  if (result.error) { alert('发送失败: '+result.error); return; }
+  var shareUrl = location.origin + '/view.html?id=' + id;
+  try {
+    navigator.clipboard.writeText(shareUrl);
+    var btn = document.getElementById('share-btn');
+    btn.textContent = '链接已复制!';
+    btn.style.background = '#059669';
+    setTimeout(function() { location.reload(); }, 1500);
+  } catch(e) {
+    alert('已标记为已发送！分享链接: ' + shareUrl);
+    location.reload();
+  }
 }
 
 async function loadReport() {

@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>训练报告</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei', sans-serif; background: #f5f6fa; min-height: 100vh; padding: 24px; }
+  .container { max-width: 680px; margin: 0 auto; }
+  .header { text-align: center; margin-bottom: 24px; }
+  .header h1 { font-size: 20px; color: #1a1a2e; font-weight: 700; margin-bottom: 4px; }
+  .header p { font-size: 13px; color: #888; }
+  .report-card { background: #fff; border-radius: 16px; box-shadow: 0 4px 24px rgba(0,0,0,0.06); overflow: hidden; margin-bottom: 16px; }
+  .card-header { background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); color: #fff; padding: 24px 28px 20px; }
+  .session-tag { display: inline-block; background: rgba(255,255,255,0.15); border-radius: 20px; padding: 4px 14px; font-size: 12px; margin-bottom: 10px; }
+  .student-name { font-size: 22px; font-weight: 700; margin-bottom: 4px; }
+  .session-meta { font-size: 13px; opacity: 0.75; display: flex; gap: 16px; flex-wrap: wrap; }
+  .section { padding: 20px 28px; border-bottom: 1px solid #f0f0f0; }
+  .section:last-child { border-bottom: none; }
+  .section-title { font-size: 12px; font-weight: 700; color: #888; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 14px; display: flex; align-items: center; gap: 6px; }
+  .dot { width: 8px; height: 8px; border-radius: 50%; background: #4f46e5; }
+  .training-table { width: 100%; border-collapse: collapse; font-size: 14px; }
+  .training-table thead th { background: #f8f9fc; padding: 10px 12px; text-align: left; font-weight: 600; color: #555; font-size: 12px; border-bottom: 2px solid #e8eaf0; }
+  .training-table tbody tr { border-bottom: 1px solid #f0f0f0; }
+  .training-table tbody td { padding: 11px 12px; color: #333; }
+  .module-tag { display: inline-block; background: #e8eaf0; border-radius: 4px; padding: 2px 8px; font-size: 11px; color: #555; font-weight: 600; }
+  .done-badge { display: inline-block; background: #d1fae5; color: #065f46; border-radius: 4px; padding: 2px 8px; font-size: 11px; font-weight: 600; }
+  .metrics-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+  .metric-item { background: #f8f9fc; border-radius: 12px; padding: 14px; text-align: center; }
+  .metric-label { font-size: 11px; color: #888; margin-bottom: 4px; }
+  .metric-value { font-size: 22px; font-weight: 700; color: #1a1a2e; }
+  .metric-unit { font-size: 12px; color: #888; font-weight: 400; }
+  .metric-value.highlight { color: #4f46e5; }
+  .comment-box { background: #f8f9fc; border-radius: 12px; padding: 16px; }
+  .comment-row { display: flex; gap: 12px; margin-bottom: 10px; }
+  .comment-row:last-child { margin-bottom: 0; }
+  .comment-label { font-size: 12px; font-weight: 600; color: #555; min-width: 70px; }
+  .comment-text { font-size: 13px; color: #333; flex: 1; line-height: 1.6; }
+  .next-session { background: linear-gradient(135deg, #f0f4ff 0%, #e8eaf0 100%); border-radius: 12px; padding: 16px 20px; }
+  .next-date { font-size: 15px; font-weight: 700; color: #1a1a2e; margin-bottom: 4px; }
+  .next-focus { font-size: 13px; color: #555; }
+  .coach-note { background: #fffbeb; border-left: 3px solid #f59e0b; border-radius: 0 8px 8px 0; padding: 14px 16px; font-size: 14px; color: #92400e; line-height: 1.6; }
+  .footer { text-align: center; padding: 16px; font-size: 12px; color: #aaa; }
+  .loading { text-align: center; padding: 80px 40px; color: #aaa; font-size: 14px; }
+  .error { text-align: center; padding: 80px 40px; color: #dc2626; font-size: 14px; }
+</style>
+</head>
+<body>
+<div class="container">
+  <div id="content"><div class="loading">正在加载训练报告...</div></div>
+</div>
+
+<script>
+var SB_URL = '__SUPABASE_URL__';
+var SB_KEY = '__SUPABASE_ANON_KEY__';
+
+function getReportId() { return new URLSearchParams(window.location.search).get('id'); }
+function esc(s) { return (s||'').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+function renderReport(r) {
+  var data = r.report_data || {};
+  var exercises = data.exercises || [];
+  var metrics = data.metrics || {};
+  var comments = data.comments || {};
+  var nextSession = data.next_session || {};
+  var exHtml = exercises.map(function(ex){
+    return '<tr><td><span class="module-tag">'+esc(ex.module)+'</span></td><td>'+esc(ex.name)+'</td><td>'+esc(ex.sets)+'</td><td>'+esc(ex.weight)+'</td><td><span class="done-badge">OK</span></td></tr>';
+  }).join('');
+  document.title = esc(r.student_name) + ' - 训练报告';
+  document.getElementById('content').innerHTML = [
+    '<div class="report-card">',
+      '<div class="card-header">',
+        '<div class="session-tag">第'+(r.session_number||1)+'课 · '+esc(r.goal||'')+'</div>',
+        '<div class="student-name">'+esc(r.student_name)+'</div>',
+        '<div class="session-meta">',
+          '<span>'+(r.session_date||'-')+'</span>',
+          '<span>'+(r.duration||60)+'分钟</span>',
+          '<span>'+(r.location||'健身房')+'</span>',
+        '</div>',
+      '</div>',
+      '<div class="section"><div class="section-title"><span class="dot"></span>本次训练内容</div>',
+        '<table class="training-table"><thead><tr><th>模块</th><th>动作</th><th>组数/时间</th><th>重量</th><th>完成</th></tr></thead><tbody>'+exHtml+'</tbody></table>',
+      '</div>',
+      '<div class="section"><div class="section-title"><span class="dot"></span>体测数据</div><div class="metrics-grid">',
+        '<div class="metric-item"><div class="metric-label">体重</div><div class="metric-value">'+esc(metrics.weight||'-')+' <span class="metric-unit">kg</span></div></div>',
+        '<div class="metric-item"><div class="metric-label">体脂率</div><div class="metric-value">'+esc(metrics.bodyfat||'-')+' <span class="metric-unit">%</span></div></div>',
+        '<div class="metric-item"><div class="metric-label">最大重量</div><div class="metric-value highlight">'+esc(metrics.max_weight||'-')+' <span class="metric-unit">kg</span></div></div>',
+        '<div class="metric-item"><div class="metric-label">有氧时长</div><div class="metric-value">'+esc(metrics.cardio_time||'-')+' <span class="metric-unit">min</span></div></div>',
+        '<div class="metric-item"><div class="metric-label">动作评分</div><div class="metric-value highlight">'+esc(metrics.action_score||'-')+'</div></div>',
+        '<div class="metric-item"><div class="metric-label">状态评分</div><div class="metric-value highlight">'+esc(metrics.status_score||'-')+'</div></div>',
+      '</div></div>',
+      '<div class="section"><div class="section-title"><span class="dot"></span>教练评价</div><div class="comment-box">',
+        '<div class="comment-row"><div class="comment-label">亮点</div><div class="comment-text">'+esc(comments.highlight||'本次表现不错')+'</div></div>',
+        '<div class="comment-row"><div class="comment-label">待改进</div><div class="comment-text">'+esc(comments.improve||'继续加油')+'</div></div>',
+        '<div class="comment-row"><div class="comment-label">关键提示</div><div class="comment-text">'+esc(comments.tip||'') +'</div></div>',
+        '<div class="comment-row"><div class="comment-label">营养建议</div><div class="comment-text">'+esc(comments.nutrition||'') +'</div></div>',
+      '</div></div>',
+      nextSession.date ? '<div class="section"><div class="section-title"><span class="dot"></span>下节计划</div><div class="next-session"><div class="next-date">📅 '+esc(nextSession.date)+'</div><div class="next-focus">'+esc(nextSession.focus||'综合训练')+'</div></div></div>' : '',
+      '<div class="section"><div class="section-title"><span class="dot"></span>教练留言</div>',
+        '<div class="coach-note">'+esc(comments.coach_note||'继续加油，稳步提升！')+'</div>',
+      '</div>',
+    '</div>',
+    '<div class="footer">教练: '+esc(r.coach_name||'教练')+' · '+esc(r.session_date||'')+'</div>'
+  ].join('');
+}
+
+async function supabaseFetch(method, path, body) {
+  var opts = {
+    method: method,
+    headers: {
+      'apikey': SB_KEY,
+      'Authorization': 'Bearer ' + SB_KEY,
+      'Content-Type': 'application/json'
+    }
+  };
+  if (body) opts.body = JSON.stringify(body);
+  var r = await fetch(SB_URL + '/rest/v1/' + path, opts);
+  if (method === 'DELETE') return { error: r.ok ? null : await r.text() };
+  if (method === 'PATCH') return { error: r.ok ? null : await r.text() };
+  var text = await r.text();
+  var data;
+  try { data = JSON.parse(text); } catch(e) { data = text; }
+  if (!r.ok) return { error: (data && data.message) || r.status, data: null };
+  return { data: data };
+}
+
+async function loadReport() {
+  var id = getReportId();
+  if (!id) { document.getElementById('content').innerHTML = '<div class="error">缺少报告ID</div>'; return; }
+  if (!SB_URL) { document.getElementById('content').innerHTML = '<div class="error">Supabase未配置</div>'; return; }
+  var result = await supabaseFetch('GET', 'reports?id=eq.' + id + '&select=*');
+  if (result.error || !result.data || !result.data.length) {
+    document.getElementById('content').innerHTML = '<div class="error">报告不存在或已被删除</div>'; return;
+  }
+  renderReport(result.data[0]);
+}
+loadReport();
+</script>
+</body>
+</html>
