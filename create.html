@@ -154,15 +154,19 @@ async function supabaseFetch(method, path, body) {
     headers: {
       'apikey': SB_KEY,
       'Authorization': 'Bearer ' + SB_KEY,
-      'Content-Type': 'application/json'
+      'Content-Type': 'application/json',
+      'Prefer': method === 'POST' ? 'return=representation' : 'return=minimal'
     }
   };
   if (body) opts.body = JSON.stringify(body);
   var r = await fetch(SB_URL + '/rest/v1/' + path, opts);
-  if (method === 'DELETE') return { error: r.ok ? null : await r.text() };
-  if (method === 'PATCH') return { error: r.ok ? null : await r.text() };
-  var data = await r.json();
-  if (!r.ok) return { error: data.message || r.status, data: null };
+  if (r.status === 204 || method === 'DELETE' || method === 'PATCH') {
+    return { error: r.ok ? null : await r.text(), ok: r.ok };
+  }
+  var text = await r.text();
+  var data;
+  try { data = JSON.parse(text); } catch(e) { data = text; }
+  if (!r.ok) return { error: (data && data.message) || r.status, data: null };
   return { data: data };
 }
 
@@ -211,8 +215,10 @@ document.getElementById('save-btn').addEventListener('click', async function() {
     result = await supabaseFetch('POST', 'reports', report);
   }
 
+  document.getElementById('save-btn').textContent = 'DEBUG: ' + JSON.stringify(result);
+  setTimeout(function() { document.getElementById('save-btn').textContent = '保存报告'; }, 5000);
   if (result.error) {
-    alert('保存失败: ' + result.error);
+    alert('保存失败: ' + JSON.stringify(result.error));
   } else {
     alert(editingId ? '报告已更新！' : '报告已创建！');
     location.href = 'index.html';
