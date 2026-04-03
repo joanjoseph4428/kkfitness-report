@@ -1,9 +1,9 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>训练报告详情</title>
+<title>璁粌鎶ュ憡璇︽儏</title>
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
   body { font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei', sans-serif; background: #f5f6fa; min-height: 100vh; padding: 24px; }
@@ -56,11 +56,11 @@
 </head>
 <body>
 <div class="container">
-  <div class="back-btn" onclick="location.href='index.html'">← 返回列表</div>
-  <div id="report-content"><div class="loading">正在加载...</div></div>
+  <div class="back-btn" onclick="location.href='index.html'">鈫?杩斿洖鍒楄〃</div>
+  <div id="report-content"><div class="loading">姝ｅ湪鍔犺浇...</div></div>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://unpkg.com/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script>
 var SB_URL = 'https://zpuewfjhcutvnewwkqjv.supabase.co';
 var SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpwdWV3ZmpoY3V0dm5ld3drcWp2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUxMjM0NjAsImV4cCI6MjA5MDY5OTQ2MH0.vkVTXyEZY2HhHRemHZEUgSaHRb_Tc03QvuBtL_y1tgQ';
@@ -77,49 +77,49 @@ function renderReport(r) {
   var comments = data.comments || {};
   var nextSession = data.next_session || {};
   var exHtml = exercises.map(function(ex){
-    return '<tr><td><span class="module-tag">'+esc(ex.module)+'</span></td><td>'+esc(ex.name)+'</td><td>'+esc(ex.sets)+'</td><td>'+esc(ex.weight)+'</td><td><span class="done-badge">✓</span></td></tr>';
+    return '<tr><td><span class="module-tag">'+esc(ex.module)+'</span></td><td>'+esc(ex.name)+'</td><td>'+esc(ex.sets)+'</td><td>'+esc(ex.weight)+'</td><td><span class="done-badge">鉁?/span></td></tr>';
   }).join('');
   document.getElementById('report-content').innerHTML = [
     '<div class="report-card">',
       '<div class="card-header">',
-        '<div class="session-tag">第 '+(r.session_number||1)+' 次课</div>',
+        '<div class="session-tag">绗?'+(r.session_number||1)+' 娆¤</div>',
         '<div class="student-name">'+esc(r.student_name)+'</div>',
         '<div class="session-meta">',
-          '<span>📅 '+(r.session_date||'-')+'</span>',
-          '<span>⏱ '+(r.duration||60)+'分钟</span>',
-          '<span>📍 '+(r.location||'器械区')+'</span>',
-          '<span>🎯 '+(r.goal||'-')+'</span>',
+          '<span>馃搮 '+(r.session_date||'-')+'</span>',
+          '<span>鈴?'+(r.duration||60)+'鍒嗛挓</span>',
+          '<span>馃搷 '+(r.location||'鍣ㄦ鍖?)+'</span>',
+          '<span>馃幆 '+(r.goal||'-')+'</span>',
         '</div>',
       '</div>',
-      '<div class="section"><div class="section-title"><span class="dot"></span>训练内容</div>',
-        '<table class="training-table"><thead><tr><th>模块</th><th>动作</th><th>组数/时长</th><th>重量</th><th>完成</th></tr></thead><tbody>'+exHtml+'</tbody></table>',
+      '<div class="section"><div class="section-title"><span class="dot"></span>璁粌鍐呭</div>',
+        '<table class="training-table"><thead><tr><th>妯″潡</th><th>鍔ㄤ綔</th><th>缁勬暟/鏃堕暱</th><th>閲嶉噺</th><th>瀹屾垚</th></tr></thead><tbody>'+exHtml+'</tbody></table>',
       '</div>',
-      '<div class="section"><div class="section-title"><span class="dot"></span>本次体测数据</div><div class="metrics-grid">',
-        '<div class="metric-item"><div class="metric-label">体重</div><div class="metric-value">'+esc(metrics.weight||'-')+' <span class="metric-unit">kg</span></div></div>',
-        '<div class="metric-item"><div class="metric-label">体脂率</div><div class="metric-value">'+esc(metrics.bodyfat||'-')+' <span class="metric-unit">%</span></div></div>',
-        '<div class="metric-item"><div class="metric-label">最大重量</div><div class="metric-value highlight">'+esc(metrics.max_weight||'-')+' <span class="metric-unit">kg</span></div></div>',
-        '<div class="metric-item"><div class="metric-label">有氧时长</div><div class="metric-value">'+esc(metrics.cardio_time||'-')+' <span class="metric-unit">min</span></div></div>',
-        '<div class="metric-item"><div class="metric-label">动作评分</div><div class="metric-value highlight">'+esc(metrics.action_score||'-')+' <span class="metric-unit">分</span></div></div>',
-        '<div class="metric-item"><div class="metric-label">状态评分</div><div class="metric-value highlight">'+esc(metrics.status_score||'-')+' <span class="metric-unit">分</span></div></div>',
+      '<div class="section"><div class="section-title"><span class="dot"></span>鏈浣撴祴鏁版嵁</div><div class="metrics-grid">',
+        '<div class="metric-item"><div class="metric-label">浣撻噸</div><div class="metric-value">'+esc(metrics.weight||'-')+' <span class="metric-unit">kg</span></div></div>',
+        '<div class="metric-item"><div class="metric-label">浣撹剛鐜?/div><div class="metric-value">'+esc(metrics.bodyfat||'-')+' <span class="metric-unit">%</span></div></div>',
+        '<div class="metric-item"><div class="metric-label">鏈€澶ч噸閲?/div><div class="metric-value highlight">'+esc(metrics.max_weight||'-')+' <span class="metric-unit">kg</span></div></div>',
+        '<div class="metric-item"><div class="metric-label">鏈夋哀鏃堕暱</div><div class="metric-value">'+esc(metrics.cardio_time||'-')+' <span class="metric-unit">min</span></div></div>',
+        '<div class="metric-item"><div class="metric-label">鍔ㄤ綔璇勫垎</div><div class="metric-value highlight">'+esc(metrics.action_score||'-')+' <span class="metric-unit">鍒?/span></div></div>',
+        '<div class="metric-item"><div class="metric-label">鐘舵€佽瘎鍒?/div><div class="metric-value highlight">'+esc(metrics.status_score||'-')+' <span class="metric-unit">鍒?/span></div></div>',
       '</div></div>',
-      '<div class="section"><div class="section-title"><span class="dot"></span>教练评语</div><div class="comment-box">',
-        '<div class="comment-row"><div class="comment-label">亮点</div><div class="comment-text">'+esc(comments.highlight||'暂无')+'</div></div>',
-        '<div class="comment-row"><div class="comment-label">待提升</div><div class="comment-text">'+esc(comments.improve||'暂无')+'</div></div>',
-        '<div class="comment-row"><div class="comment-label">关键提示</div><div class="comment-text">'+esc(comments.tip||'暂无')+'</div></div>',
-        '<div class="comment-row"><div class="comment-label">营养建议</div><div class="comment-text">'+esc(comments.nutrition||'暂无')+'</div></div>',
+      '<div class="section"><div class="section-title"><span class="dot"></span>鏁欑粌璇勮</div><div class="comment-box">',
+        '<div class="comment-row"><div class="comment-label">浜偣</div><div class="comment-text">'+esc(comments.highlight||'鏆傛棤')+'</div></div>',
+        '<div class="comment-row"><div class="comment-label">寰呮彁鍗?/div><div class="comment-text">'+esc(comments.improve||'鏆傛棤')+'</div></div>',
+        '<div class="comment-row"><div class="comment-label">鍏抽敭鎻愮ず</div><div class="comment-text">'+esc(comments.tip||'鏆傛棤')+'</div></div>',
+        '<div class="comment-row"><div class="comment-label">钀ュ吇寤鸿</div><div class="comment-text">'+esc(comments.nutrition||'鏆傛棤')+'</div></div>',
       '</div></div>',
-      '<div class="section"><div class="section-title"><span class="dot"></span>下节计划</div>',
-        '<div class="next-session"><div class="next-info"><div class="next-date">📅 '+(nextSession.date||'待定')+'</div><div class="next-focus">🎯 '+(nextSession.focus||'下次重点：全身综合训练')+'</div></div><button class="next-btn">已预约 ✓</button></div>',
+      '<div class="section"><div class="section-title"><span class="dot"></span>涓嬭妭璁″垝</div>',
+        '<div class="next-session"><div class="next-info"><div class="next-date">馃搮 '+(nextSession.date||'寰呭畾')+'</div><div class="next-focus">馃幆 '+(nextSession.focus||'涓嬫閲嶇偣锛氬叏韬患鍚堣缁?)+'</div></div><button class="next-btn">宸查绾?鉁?/button></div>',
       '</div>',
-      '<div class="section"><div class="section-title"><span class="dot"></span>教练留言</div>',
-        '<div class="coach-note">💬 '+(comments.coach_note||'继续加油！')+'</div>',
+      '<div class="section"><div class="section-title"><span class="dot"></span>鏁欑粌鐣欒█</div>',
+        '<div class="coach-note">馃挰 '+(comments.coach_note||'缁х画鍔犳补锛?)+'</div>',
       '</div>',
       '<div class="card-footer">',
-        '<div class="coach-info">教练：<strong>'+esc(r.coach_name||'教练')+'</strong> · '+(r.session_date||'')+'</div>',
+        '<div class="coach-info">鏁欑粌锛?strong>'+esc(r.coach_name||'鏁欑粌')+'</strong> 路 '+(r.session_date||'')+'</div>',
         '<div class="action-btns">',
-          '<button class="btn-delete" id="del-btn">🗑 删除</button>',
-          '<button class="btn-edit" id="edit-btn">✏️ 修改</button>',
-          '<button class="btn-share" id="share-btn">📤 发送给学员</button>',
+          '<button class="btn-delete" id="del-btn">馃棏 鍒犻櫎</button>',
+          '<button class="btn-edit" id="edit-btn">鉁忥笍 淇敼</button>',
+          '<button class="btn-share" id="share-btn">馃摛 鍙戦€佺粰瀛﹀憳</button>',
         '</div>',
       '</div>',
     '</div>'
@@ -131,25 +131,25 @@ function renderReport(r) {
 }
 
 async function deleteReport(id) {
-  if (!confirm('确定删除这份报告？')) return;
+  if (!confirm('纭畾鍒犻櫎杩欎唤鎶ュ憡锛?)) return;
   var result = await sb.from('reports').delete().eq('id', id);
-  if (result.error) alert('删除失败: '+result.error.message);
+  if (result.error) alert('鍒犻櫎澶辫触: '+result.error.message);
   else location.href = 'index.html';
 }
 
 async function sendReport(id) {
   var result = await sb.from('reports').update({ status: 'done' }).eq('id', id);
-  if (result.error) alert('发送失败: '+result.error.message);
-  else { alert('已发送给学员！'); location.reload(); }
+  if (result.error) alert('鍙戦€佸け璐? '+result.error.message);
+  else { alert('宸插彂閫佺粰瀛﹀憳锛?); location.reload(); }
 }
 
 async function loadReport() {
   var id = getReportId();
-  if (!id) { document.getElementById('report-content').innerHTML = '<div class="loading">缺少报告ID</div>'; return; }
-  if (!sb) { document.getElementById('report-content').innerHTML = '<div class="loading">⚠️ Supabase 未配置</div>'; return; }
+  if (!id) { document.getElementById('report-content').innerHTML = '<div class="loading">缂哄皯鎶ュ憡ID</div>'; return; }
+  if (!sb) { document.getElementById('report-content').innerHTML = '<div class="loading">鈿狅笍 Supabase 鏈厤缃?/div>'; return; }
   var result = await sb.from('reports').select('*').eq('id', id).single();
   if (result.error || !result.data) {
-    document.getElementById('report-content').innerHTML = '<div class="loading">报告不存在或加载失败</div>'; return;
+    document.getElementById('report-content').innerHTML = '<div class="loading">鎶ュ憡涓嶅瓨鍦ㄦ垨鍔犺浇澶辫触</div>'; return;
   }
   renderReport(result.data);
 }
