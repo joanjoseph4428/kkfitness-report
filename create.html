@@ -1,9 +1,9 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>鍒涘缓/缂栬緫璁粌鎶ュ憡</title>
+<title>创建/编辑训练报告</title>
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
   body { font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei', sans-serif; background: #f5f6fa; min-height: 100vh; padding: 24px; }
@@ -37,73 +37,71 @@
 </head>
 <body>
 <div class="container">
-  <div class="back-btn" onclick="location.href='index.html'">鈫?杩斿洖鍒楄〃</div>
-  <div class="page-title"><h1 id="page-title">馃搵 鍒涘缓璁粌鎶ュ憡</h1></div>
+  <div class="back-btn" onclick="location.href='index.html'">← 返回列表</div>
+  <div class="page-title"><h1 id="page-title">+ 创建训练报告</h1></div>
   <div class="form-card">
     <div class="form-section">
-      <div class="section-label">鍩烘湰淇℃伅</div>
+      <div class="section-label">基本信息</div>
       <div class="form-row">
-        <div class="form-group"><label>瀛﹀憳濮撳悕</label><input type="text" id="student_name" placeholder="濡傦細寮犱笁" required></div>
-        <div class="form-group"><label>绗嚑娆¤</label><input type="number" id="session_number" value="1" min="1"></div>
+        <div class="form-group"><label>学员姓名</label><input type="text" id="student_name" placeholder="例如：张三" required></div>
+        <div class="form-group"><label>第几课</label><input type="number" id="session_number" value="1" min="1"></div>
       </div>
       <div class="form-row">
-        <div class="form-group"><label>涓婅鏃ユ湡</label><input type="date" id="session_date"></div>
-        <div class="form-group"><label>璁粌鏃堕暱锛堝垎閽燂級</label><input type="number" id="duration" value="60" min="1"></div>
+        <div class="form-group"><label>上课日期</label><input type="date" id="session_date"></div>
+        <div class="form-group"><label>训练时长（分钟）</label><input type="number" id="duration" value="60" min="1"></div>
       </div>
       <div class="form-row">
-        <div class="form-group"><label>璁粌鐩爣</label>
-          <select id="goal"><option value="鍑忚剛">鍑忚剛</option><option value="澧炶倢">澧炶倢</option><option value="濉戝舰">濉戝舰</option><option value="浣撹兘鎻愬崌">浣撹兘鎻愬崌</option><option value="搴峰璁粌">搴峰璁粌</option></select>
+        <div class="form-group"><label>训练目标</label>
+          <select id="goal"><option value="减脂">减脂</option><option value="增肌">增肌</option><option value="塑形">塑形</option><option value="体能提升">体能提升</option><option value="康复训练">康复训练</option></select>
         </div>
-        <div class="form-group"><label>璁粌鍦扮偣</label><input type="text" id="location" placeholder="濡傦細鍣ㄦ鍖? value="鍣ㄦ鍖?></div>
+        <div class="form-group"><label>训练地点</label><input type="text" id="location" placeholder="例如：健身房" value="健身房"></div>
       </div>
     </div>
     <div class="form-section">
-      <div class="section-label">璁粌鍔ㄤ綔</div>
+      <div class="section-label">训练动作</div>
       <div id="exercise-list"></div>
-      <button class="add-exercise-btn" id="add-ex-btn">+ 娣诲姞璁粌鍔ㄤ綔</button>
+      <button class="add-exercise-btn" id="add-ex-btn">+ 添加训练动作</button>
     </div>
     <div class="form-section">
-      <div class="section-label">浣撴祴鏁版嵁</div>
+      <div class="section-label">体测数据</div>
       <div class="form-row">
-        <div class="form-group"><label>浣撻噸 (kg)</label><input type="number" id="weight" step="0.1" placeholder="濡傦細74.8"></div>
-        <div class="form-group"><label>浣撹剛鐜?(%)</label><input type="number" id="bodyfat" step="0.1" placeholder="濡傦細22.1"></div>
+        <div class="form-group"><label>体重 (kg)</label><input type="number" id="weight" step="0.1" placeholder="例如：74.8"></div>
+        <div class="form-group"><label>体脂率 (%)</label><input type="number" id="bodyfat" step="0.1" placeholder="例如：22.1"></div>
       </div>
       <div class="form-row">
-        <div class="form-group"><label>鏈€澶ч噸閲?(kg)</label><input type="number" id="max_weight" placeholder="濡傦細80"></div>
-        <div class="form-group"><label>鏈夋哀鏃堕暱 (鍒嗛挓)</label><input type="number" id="cardio_time" placeholder="濡傦細20"></div>
+        <div class="form-group"><label>最大重量 (kg)</label><input type="number" id="max_weight" placeholder="例如：80"></div>
+        <div class="form-group"><label>有氧时长 (分钟)</label><input type="number" id="cardio_time" placeholder="例如：20"></div>
       </div>
       <div class="form-row">
-        <div class="form-group"><label>鍔ㄤ綔璇勫垎 (1-10)</label><input type="number" id="action_score" min="1" max="10" placeholder="濡傦細8"></div>
-        <div class="form-group"><label>鐘舵€佽瘎鍒?(1-10)</label><input type="number" id="status_score" min="1" max="10" placeholder="濡傦細9"></div>
+        <div class="form-group"><label>动作评分 (1-10)</label><input type="number" id="action_score" min="1" max="10" placeholder="例如：8"></div>
+        <div class="form-group"><label>状态评分 (1-10)</label><input type="number" id="status_score" min="1" max="10" placeholder="例如：9"></div>
       </div>
     </div>
     <div class="form-section">
-      <div class="section-label">鏁欑粌璇勮</div>
-      <div class="form-group" style="margin-bottom:12px"><label>浜偣</label><textarea id="highlight" placeholder="浠婂ぉ琛ㄧ幇寰堝ソ鐨勫湴鏂?.."></textarea></div>
-      <div class="form-group" style="margin-bottom:12px"><label>寰呮彁鍗?/label><textarea id="improve" placeholder="闇€瑕佸姞寮虹殑鍦版柟..."></textarea></div>
-      <div class="form-group" style="margin-bottom:12px"><label>鍏抽敭鎻愮ず</label><textarea id="tip" placeholder="鎶€鏈鐐规垨娉ㄦ剰浜嬮」..."></textarea></div>
-      <div class="form-group"><label>钀ュ吇寤鸿</label><textarea id="nutrition" placeholder="璇惧悗钀ュ吇琛ュ厖寤鸿..."></textarea></div>
+      <div class="section-label">教练评价</div>
+      <div class="form-group" style="margin-bottom:12px"><label>亮点</label><textarea id="highlight" placeholder="今天表现很好的地方..."></textarea></div>
+      <div class="form-group" style="margin-bottom:12px"><label>待改进</label><textarea id="improve" placeholder="需要加强的地方..."></textarea></div>
+      <div class="form-group" style="margin-bottom:12px"><label>关键提示</label><textarea id="tip" placeholder="技术要点或注意事项..."></textarea></div>
+      <div class="form-group"><label>营养建议</label><textarea id="nutrition" placeholder="课后营养补充建议..."></textarea></div>
     </div>
     <div class="form-section">
-      <div class="section-label">涓嬭妭璁″垝</div>
+      <div class="section-label">下节计划</div>
       <div class="form-row">
-        <div class="form-group"><label>涓嬫鏃ユ湡</label><input type="date" id="next_date"></div>
-        <div class="form-group"><label>涓嬫閲嶇偣</label><input type="text" id="next_focus" placeholder="濡傦細鑵块儴鍔涢噺 + 鏈夋哀鑰愬姏"></div>
+        <div class="form-group"><label>下节日期</label><input type="date" id="next_date"></div>
+        <div class="form-group"><label>下节重点</label><input type="text" id="next_focus" placeholder="例如：胸部力量 + 有氧耐力"></div>
       </div>
-      <div class="form-group"><label>鏁欑粌鐣欒█</label><textarea id="coach_note" placeholder="缁欏鍛樼殑榧撳姳璇?..">缁х画鍔犳补锛屼綘杩涙寰堝揩锛佹寜杩欎釜鑺傚涓嬪幓锛屼笅娆′綋娴嬫暟鎹竴瀹氫細鏇村ソ鐪?馃挭</textarea></div>
+      <div class="form-group"><label>教练留言</label><textarea id="coach_note" placeholder="给学员的鼓励的话...">继续加油，你进步很快！按这个节奏下去，下次体能数据一定会更好。💪</textarea></div>
     </div>
     <div class="btn-row">
-      <button class="btn-cancel" onclick="location.href='index.html'">鍙栨秷</button>
-      <button class="btn-save" id="save-btn">馃捑 淇濆瓨鎶ュ憡</button>
+      <button class="btn-cancel" onclick="location.href='index.html'">取消</button>
+      <button class="btn-save" id="save-btn">💾 保存报告</button>
     </div>
   </div>
 </div>
 
-<script src="https://unpkg.com/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script>
-var SB_URL = 'https://zpuewfjhcutvnewwkqjv.supabase.co';
-var SB_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpwdWV3ZmpoY3V0dm5ld3drcWp2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUxMjM0NjAsImV4cCI6MjA5MDY5OTQ2MH0.vkVTXyEZY2HhHRemHZEUgSaHRb_Tc03QvuBtL_y1tgQ';
-var sb = (SB_URL && SB_KEY && typeof createClient !== 'undefined') ? createClient(SB_URL, SB_KEY) : null;
+var SB_URL = '__SUPABASE_URL__';
+var SB_KEY = '__SUPABASE_ANON_KEY__';
 
 var editingId = null;
 var exerciseCount = 0;
@@ -111,20 +109,20 @@ var exerciseCount = 0;
 function getReportId() { return new URLSearchParams(window.location.search).get('id'); }
 
 function addExercise(module, name, sets, weight) {
-  module = module || '鍔涢噺'; name = name || ''; sets = sets || ''; weight = weight || '';
+  module = module || '力量'; name = name || ''; sets = sets || ''; weight = weight || '';
   var id = exerciseCount++;
   var el = document.createElement('div');
   el.className = 'exercise-item';
   el.id = 'ex-' + id;
   el.innerHTML =
-    '<div class="exercise-header"><span>鍔ㄤ綔 ' + exerciseCount + '</span><button class="remove-btn" onclick="removeExercise(' + id + ')">脳</button></div>' +
+    '<div class="exercise-header"><span>动作 ' + (id+1) + '</span><button class="remove-btn" onclick="removeExercise(' + id + ')">×</button></div>' +
     '<div class="exercise-row">' +
-      '<select class="ex-module"><option value="鐑韩">鐑韩</option><option value="鍔涢噺" selected>鍔涢噺</option><option value="鏈夋哀">鏈夋哀</option><option value="鎷変几">鎷変几</option><option value="鏍稿績">鏍稿績</option></select>' +
-      '<input type="text" class="ex-name" placeholder="鍔ㄤ綔鍚嶇О" value="">' +
-      '<input type="text" class="ex-sets" placeholder="缁勬暟/鏃堕暱" value="">' +
-      '<input type="text" class="ex-weight" placeholder="閲嶉噺" value="">' +
+      '<select class="ex-module"><option value="热身">热身</option><option value="力量" selected>力量</option><option value="有氧">有氧</option><option value="拉伸">拉伸</option><option value="核心">核心</option></select>' +
+      '<input type="text" class="ex-name" placeholder="动作名称" value="">' +
+      '<input type="text" class="ex-sets" placeholder="组数/时间" value="">' +
+      '<input type="text" class="ex-weight" placeholder="重量" value="">' +
     '</div>';
-  if (module !== '鍔涢噺') el.querySelector('.ex-module').value = module;
+  if (module !== '力量') el.querySelector('.ex-module').value = module;
   if (name) el.querySelector('.ex-name').value = name;
   if (sets) el.querySelector('.ex-sets').value = sets;
   if (weight) el.querySelector('.ex-weight').value = weight;
@@ -155,8 +153,8 @@ document.getElementById('add-ex-btn').addEventListener('click', function() { add
 
 document.getElementById('save-btn').addEventListener('click', async function() {
   var studentName = document.getElementById('student_name').value.trim();
-  if (!studentName) { alert('璇疯緭鍏ュ鍛樺鍚?); return; }
-  if (!sb) { alert('Supabase 鏈厤缃紝鏃犳硶淇濆瓨'); return; }
+  if (!studentName) { alert('请输入学员姓名'); return; }
+  if (!SB_URL || SB_URL === '__SUPABASE_URL__') { alert('Supabase 未配置，无法保存'); return; }
 
   var report = {
     student_name: studentName,
@@ -165,7 +163,7 @@ document.getElementById('save-btn').addEventListener('click', async function() {
     duration: parseInt(document.getElementById('duration').value) || 60,
     goal: document.getElementById('goal').value,
     location: document.getElementById('location').value,
-    coach_name: '鏁欑粌',
+    coach_name: '教练',
     status: 'pending',
     report_data: {
       exercises: getExercises(),
@@ -193,31 +191,49 @@ document.getElementById('save-btn').addEventListener('click', async function() {
 
   var result;
   if (editingId) {
-    result = await sb.from('reports').update(report).eq('id', editingId);
+    result = await supabaseFetch('PATCH', 'reports?id=eq.' + editingId, report);
   } else {
-    result = await sb.from('reports').insert([report]);
+    result = await supabaseFetch('POST', 'reports', report);
   }
 
   if (result.error) {
-    alert('淇濆瓨澶辫触: ' + result.error.message);
+    alert('保存失败: ' + result.error);
   } else {
-    alert(editingId ? '鎶ュ憡宸叉洿鏂帮紒' : '鎶ュ憡宸插垱寤猴紒');
+    alert(editingId ? '报告已更新！' : '报告已创建！');
     location.href = 'index.html';
   }
 });
 
+async function supabaseFetch(method, path, body) {
+  var opts = {
+    method: method,
+    headers: {
+      'apikey': SB_KEY,
+      'Authorization': 'Bearer ' + SB_KEY,
+      'Content-Type': 'application/json',
+      'Prefer': method === 'POST' ? 'return=representation' : 'return=minimal'
+    }
+  };
+  if (body) opts.body = JSON.stringify(body);
+  var r = await fetch(SB_URL + '/rest/v1/' + path, opts);
+  if (method === 'DELETE' || method === 'PATCH') return { error: r.ok ? null : await r.text() };
+  var data = await r.json();
+  if (!r.ok) return { error: data.message || r.status, data: null };
+  return { data: data };
+}
+
 async function loadExistingReport(id) {
-  var result = await sb.from('reports').select('*').eq('id', id).single();
-  if (result.error || !result.data) return;
-  var data = result.data;
+  var result = await supabaseFetch('GET', 'reports?id=eq.' + id + '&select=*');
+  if (result.error || !result.data || !result.data.length) return;
+  var data = result.data[0];
   editingId = id;
-  document.getElementById('page-title').textContent = '鉁忥笍 缂栬緫璁粌鎶ュ憡';
+  document.getElementById('page-title').textContent = '✏️ 编辑训练报告';
   document.getElementById('student_name').value = data.student_name || '';
   document.getElementById('session_number').value = data.session_number || 1;
   document.getElementById('session_date').value = data.session_date || '';
   document.getElementById('duration').value = data.duration || 60;
-  document.getElementById('goal').value = data.goal || '鍑忚剛';
-  document.getElementById('location').value = data.location || '鍣ㄦ鍖?;
+  document.getElementById('goal').value = data.goal || '减脂';
+  document.getElementById('location').value = data.location || '健身房';
   var rd = data.report_data || {};
   var exs = rd.exercises || [];
   if (exs.length === 0) addExercise(); else exs.forEach(function(ex){ addExercise(ex.module, ex.name, ex.sets, ex.weight); });
