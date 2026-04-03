@@ -1,9 +1,9 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>训练报告详情</title>
+<title>Report Detail</title>
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
   body { font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei', sans-serif; background: #f5f6fa; min-height: 100vh; padding: 24px; }
@@ -36,8 +36,6 @@
   .comment-label { font-size: 12px; font-weight: 600; color: #555; min-width: 70px; }
   .comment-text { font-size: 13px; color: #333; flex: 1; }
   .next-session { background: linear-gradient(135deg, #f0f4ff 0%, #e8eaf0 100%); border-radius: 12px; padding: 16px 20px; display: flex; justify-content: space-between; align-items: center; }
-  .next-info .next-date { font-size: 15px; font-weight: 700; color: #1a1a2e; }
-  .next-info .next-focus { font-size: 13px; color: #555; margin-top: 2px; }
   .next-btn { background: #4f46e5; color: #fff; border: none; border-radius: 8px; padding: 8px 18px; font-size: 13px; font-weight: 600; cursor: pointer; }
   .coach-note { background: #fffbeb; border-left: 3px solid #f59e0b; border-radius: 0 8px 8px 0; padding: 14px 16px; font-size: 14px; color: #92400e; line-height: 1.6; }
   .card-footer { padding: 16px 28px; background: #fafafa; display: flex; justify-content: space-between; align-items: center; }
@@ -53,15 +51,46 @@
 </head>
 <body>
 <div class="container">
-  <div class="back-btn" onclick="location.href='index.html'">← 返回列表</div>
-  <div id="report-content"><div class="loading">正在加载...</div></div>
+  <div class="back-btn" onclick="location.href='index.html'">Back to List</div>
+  <div id="report-content"><div class="loading">Loading...</div></div>
+</div>
 
 <script>
-var SB_URL = '__SUPABASE_URL__';
-var SB_KEY = '__SUPABASE_ANON_KEY__';
+var MASTER_KEY = '$2a$10$xtOHk9uH7fTP9zDGqQ5FhObZPimIVOe39.U7RjutviV5cNeytzgbi';
+var BIN_ID = localStorage.getItem('kkfitness_bin_id');
+var BIN_URL = 'https://api.jsonbin.io/v2/b/' + BIN_ID;
 
 function getReportId() { return new URLSearchParams(window.location.search).get('id'); }
 function esc(s) { return (s||'').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+async function jsonbinFetch(method, path, body) {
+  var opts = {
+    method: method,
+    headers: { 'X-Master-Key': MASTER_KEY, 'Content-Type': 'application/json' }
+  };
+  if (body) opts.body = JSON.stringify(body);
+  var r = await fetch(BIN_URL + path, opts);
+  var text = await r.text();
+  var data;
+  try { data = JSON.parse(text); } catch(e) { data = text; }
+  if (!r.ok) return { error: r.status, data: null };
+  return { data: data };
+}
+
+async function getReports() {
+  var result = await jsonbinFetch('GET', '');
+  if (result.error) return [];
+  return result.data && result.data.reports ? result.data.reports : [];
+}
+
+async function saveReports(reports) {
+  var r = await fetch(BIN_URL, {
+    method: 'PUT',
+    headers: { 'X-Master-Key': MASTER_KEY, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ reports: reports })
+  });
+  return r.ok;
+}
 
 function renderReport(r) {
   var data = r.report_data || {};
@@ -72,47 +101,45 @@ function renderReport(r) {
   var exHtml = exercises.map(function(ex){
     return '<tr><td><span class="module-tag">'+esc(ex.module)+'</span></td><td>'+esc(ex.name)+'</td><td>'+esc(ex.sets)+'</td><td>'+esc(ex.weight)+'</td><td><span class="done-badge">OK</span></td></tr>';
   }).join('');
+  document.title = esc(r.student_name) + ' - Report';
   document.getElementById('report-content').innerHTML = [
     '<div class="report-card">',
       '<div class="card-header">',
-        '<div class="session-tag">第'+(r.session_number||1)+' 课</div>',
+        '<div class="session-tag">Session '+(r.session_number||1)+'</div>',
         '<div class="student-name">'+esc(r.student_name)+'</div>',
         '<div class="session-meta">',
           '<span>'+(r.session_date||'-')+'</span>',
-          '<span>'+(r.duration||60)+'分钟</span>',
-          '<span>'+(r.location||'健身房')+'</span>',
+          '<span>'+(r.duration||60)+'min</span>',
           '<span>'+(r.goal||'-')+'</span>',
         '</div>',
       '</div>',
-      '<div class="section"><div class="section-title"><span class="dot"></span>训练内容</div>',
-        '<table class="training-table"><thead><tr><th>模块</th><th>动作</th><th>组数/时间</th><th>重量</th><th>完成</th></tr></thead><tbody>'+exHtml+'</tbody></table>',
+      '<div class="section"><div class="section-title"><span class="dot"></span>Training Content</div>',
+        '<table class="training-table"><thead><tr><th>Module</th><th>Exercise</th><th>Sets/Time</th><th>Weight</th><th>Done</th></tr></thead><tbody>'+exHtml+'</tbody></table>',
       '</div>',
-      '<div class="section"><div class="section-title"><span class="dot"></span>体测数据</div><div class="metrics-grid">',
-        '<div class="metric-item"><div class="metric-label">体重</div><div class="metric-value">'+esc(metrics.weight||'-')+' kg</div></div>',
-        '<div class="metric-item"><div class="metric-label">体脂率</div><div class="metric-value">'+esc(metrics.bodyfat||'-')+' %</div></div>',
-        '<div class="metric-item"><div class="metric-label">最大重量</div><div class="metric-value highlight">'+esc(metrics.max_weight||'-')+' kg</div></div>',
-        '<div class="metric-item"><div class="metric-label">有氧时长</div><div class="metric-value">'+esc(metrics.cardio_time||'-')+' min</div></div>',
-        '<div class="metric-item"><div class="metric-label">动作评分</div><div class="metric-value highlight">'+esc(metrics.action_score||'-')+'</div></div>',
-        '<div class="metric-item"><div class="metric-label">状态评分</div><div class="metric-value highlight">'+esc(metrics.status_score||'-')+'</div></div>',
+      '<div class="section"><div class="section-title"><span class="dot"></span>Metrics</div><div class="metrics-grid">',
+        '<div class="metric-item"><div class="metric-label">Weight</div><div class="metric-value">'+esc(metrics.weight||'-')+' <span class="metric-unit">kg</span></div></div>',
+        '<div class="metric-item"><div class="metric-label">Body Fat</div><div class="metric-value">'+esc(metrics.bodyfat||'-')+' <span class="metric-unit">%</span></div></div>',
+        '<div class="metric-item"><div class="metric-label">Max Weight</div><div class="metric-value highlight">'+esc(metrics.max_weight||'-')+' <span class="metric-unit">kg</span></div></div>',
+        '<div class="metric-item"><div class="metric-label">Cardio Time</div><div class="metric-value">'+esc(metrics.cardio_time||'-')+' <span class="metric-unit">min</span></div></div>',
+        '<div class="metric-item"><div class="metric-label">Action Score</div><div class="metric-value highlight">'+esc(metrics.action_score||'-')+'</div></div>',
+        '<div class="metric-item"><div class="metric-label">Status Score</div><div class="metric-value highlight">'+esc(metrics.status_score||'-')+'</div></div>',
       '</div></div>',
-      '<div class="section"><div class="section-title"><span class="dot"></span>教练评价</div><div class="comment-box">',
-        '<div class="comment-row"><div class="comment-label">亮点</div><div class="comment-text">'+esc(comments.highlight||'无')+'</div></div>',
-        '<div class="comment-row"><div class="comment-label">待改进</div><div class="comment-text">'+esc(comments.improve||'无')+'</div></div>',
-        '<div class="comment-row"><div class="comment-label">关键提示</div><div class="comment-text">'+esc(comments.tip||'无')+'</div></div>',
-        '<div class="comment-row"><div class="comment-label">营养建议</div><div class="comment-text">'+esc(comments.nutrition||'无')+'</div></div>',
+      '<div class="section"><div class="section-title"><span class="dot"></span>Feedback</div><div class="comment-box">',
+        '<div class="comment-row"><div class="comment-label">Highlight</div><div class="comment-text">'+esc(comments.highlight||'None')+'</div></div>',
+        '<div class="comment-row"><div class="comment-label">Improve</div><div class="comment-text">'+esc(comments.improve||'None')+'</div></div>',
+        '<div class="comment-row"><div class="comment-label">Tip</div><div class="comment-text">'+esc(comments.tip||'None')+'</div></div>',
+        '<div class="comment-row"><div class="comment-label">Nutrition</div><div class="comment-text">'+esc(comments.nutrition||'None')+'</div></div>',
       '</div></div>',
-      '<div class="section"><div class="section-title"><span class="dot"></span>下节计划</div>',
-        '<div class="next-session"><div class="next-info"><div class="next-date">'+(nextSession.date||'待定')+'</div><div class="next-focus">'+(nextSession.focus||'综合训练')+'</div></div><button class="next-btn">已预约</button></div>',
-      '</div>',
-      '<div class="section"><div class="section-title"><span class="dot"></span>教练留言</div>',
-        '<div class="coach-note">'+(comments.coach_note||'继续加油，你进步很快！')+'</div>',
+      nextSession.date ? '<div class="section"><div class="section-title"><span class="dot"></span>Next Session</div><div class="next-session"><div class="next-info"><div class="next-date">'+esc(nextSession.date)+'</div><div class="next-focus">'+esc(nextSession.focus||'General training')+'</div></div><button class="next-btn">Booked</button></div></div>' : '',
+      '<div class="section"><div class="section-title"><span class="dot"></span>Coach Note</div>',
+        '<div class="coach-note">'+esc(comments.coach_note||'Keep it up, you are making good progress!')+'</div>',
       '</div>',
       '<div class="card-footer">',
-        '<div class="coach-info">教练: <strong>'+esc(r.coach_name||'教练')+'</strong></div>',
+        '<div class="coach-info">Coach: <strong>'+esc(r.coach_name||'Coach')+'</strong></div>',
         '<div class="action-btns">',
-          '<button class="btn-delete" id="del-btn">删除</button>',
-          '<button class="btn-edit" id="edit-btn">修改</button>',
-          '<button class="btn-share" id="share-btn">发送给学员</button>',
+          '<button class="btn-delete" id="del-btn">Delete</button>',
+          '<button class="btn-edit" id="edit-btn">Edit</button>',
+          '<button class="btn-share" id="share-btn">Share Link</button>',
         '</div>',
       '</div>',
     '</div>'
@@ -120,63 +147,42 @@ function renderReport(r) {
 
   document.getElementById('del-btn').addEventListener('click', function(){ deleteReport(r.id); });
   document.getElementById('edit-btn').addEventListener('click', function(){ location.href='create.html?id='+r.id; });
-  document.getElementById('share-btn').addEventListener('click', function(){ sendReport(r.id); });
-}
-
-async function supabaseFetch(method, path, body) {
-  var opts = {
-    method: method,
-    headers: {
-      'apikey': SB_KEY,
-      'Authorization': 'Bearer ' + SB_KEY,
-      'Content-Type': 'application/json',
-      'Prefer': method === 'POST' ? 'return=representation' : 'return=minimal'
-    }
-  };
-  if (body) opts.body = JSON.stringify(body);
-  var r = await fetch(SB_URL + '/rest/v1/' + path, opts);
-  if (r.status === 204 || method === 'DELETE' || method === 'PATCH') {
-    return { error: r.ok ? null : await r.text(), ok: r.ok };
-  }
-  var text = await r.text();
-  var data;
-  try { data = JSON.parse(text); } catch(e) { data = text; }
-  if (!r.ok) return { error: (data && data.message) || r.status, data: null };
-  return { data: data };
+  document.getElementById('share-btn').addEventListener('click', function(){ shareReport(r.id); });
 }
 
 async function deleteReport(id) {
-  if (!confirm('确定删除这份报告吗？')) return;
-  var result = await supabaseFetch('DELETE', 'reports?id=eq.' + id);
-  if (result.error) alert('删除失败: '+result.error);
-  else location.href = 'index.html';
+  if (!confirm('Delete this report?')) return;
+  var reports = await getReports();
+  var filtered = reports.filter(function(r){ return r.id !== id; });
+  var ok = await saveReports(filtered);
+  if (ok) location.href = 'index.html';
+  else alert('Delete failed');
 }
 
-async function sendReport(id) {
-  var result = await supabaseFetch('PATCH', 'reports?id=eq.' + id, { status: 'done' });
-  if (result.error) { alert('发送失败: '+result.error); return; }
+async function shareReport(id) {
+  var reports = await getReports();
+  var r = reports.find(function(r){ return r.id === id; });
+  if (!r) return;
+  r.status = 'done';
+  await saveReports(reports);
   var shareUrl = location.origin + '/view.html?id=' + id;
   try {
     navigator.clipboard.writeText(shareUrl);
     var btn = document.getElementById('share-btn');
-    btn.textContent = '链接已复制!';
+    btn.textContent = 'Link Copied!';
     btn.style.background = '#059669';
-    setTimeout(function() { location.reload(); }, 1500);
   } catch(e) {
-    alert('已标记为已发送！分享链接: ' + shareUrl);
-    location.reload();
+    alert('Marked as sent! Share link: ' + shareUrl);
   }
 }
 
 async function loadReport() {
   var id = getReportId();
-  if (!id) { document.getElementById('report-content').innerHTML = '<div class="loading">缺少报告ID</div>'; return; }
-  if (!SB_URL) { document.getElementById('report-content').innerHTML = '<div class="loading">Supabase URL is empty</div>'; return; }
-  var result = await supabaseFetch('GET', 'reports?id=eq.' + id + '&select=*');
-  if (result.error || !result.data || !result.data.length) {
-    document.getElementById('report-content').innerHTML = '<div class="loading">报告不存在或加载失败</div>'; return;
-  }
-  renderReport(result.data[0]);
+  if (!id) { document.getElementById('report-content').innerHTML = '<div class="loading">Missing report ID</div>'; return; }
+  var reports = await getReports();
+  var r = reports.find(function(r){ return r.id === id; });
+  if (!r) { document.getElementById('report-content').innerHTML = '<div class="loading">Report not found</div>'; return; }
+  renderReport(r);
 }
 loadReport();
 </script>

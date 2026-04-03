@@ -1,9 +1,9 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>训练报告 - 首页</title>
+<title>Training Report - Home</title>
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
   body { font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei', sans-serif; background: #f5f6fa; min-height: 100vh; padding: 24px; }
@@ -29,56 +29,79 @@
 <body>
 <div class="container">
   <div class="page-title">
-    <h1>🏋️‍♂️ 健身训练报告系统</h1>
-    <p id="coach-name">教练端 · 加载中...</p>
+    <h1>Gym Training Report System</h1>
+    <p id="coach-name">Coach Dashboard</p>
   </div>
   <div class="tabs">
-    <button class="tab active" onclick="showTab('all')">全部报告</button>
-    <button class="tab" onclick="showTab('done')">已完成</button>
-    <button class="tab" onclick="showTab('pending')">待完成</button>
+    <button class="tab active" onclick="showTab('all')">All</button>
+    <button class="tab" onclick="showTab('done')">Done</button>
+    <button class="tab" onclick="showTab('pending')">Pending</button>
   </div>
   <div id="report-list" class="report-list">
-    <div class="empty">正在加载训练报告...</div>
+    <div class="empty">Loading reports...</div>
   </div>
 </div>
 <button class="add-btn" onclick="location.href='create.html'">+</button>
 
 <script>
-var SB_URL = '__SUPABASE_URL__';
-var SB_KEY = '__SUPABASE_ANON_KEY__';
+var MASTER_KEY = '$2a$10$xtOHk9uH7fTP9zDGqQ5FhObZPimIVOe39.U7RjutviV5cNeytzgbi';
+var BIN_ID = localStorage.getItem('kkfitness_bin_id');
+var BIN_URL = 'https://api.jsonbin.io/v2/b/' + BIN_ID;
+
+function esc(s) { return (s||'').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+async function jsonbinFetch(method, path, body, nobin) {
+  if (!BIN_ID && nobin) return { data: [], error: null };
+  var opts = {
+    method: method,
+    headers: {
+      'X-Master-Key': MASTER_KEY,
+      'Content-Type': 'application/json'
+    }
+  };
+  if (body) opts.body = JSON.stringify(body);
+  var r = await fetch(BIN_URL + path, opts);
+  if (r.status === 404) return { data: [], error: null, notFound: true };
+  var text = await r.text();
+  var data;
+  try { data = JSON.parse(text); } catch(e) { data = text; }
+  if (!r.ok) return { error: r.status + ': ' + text, data: null };
+  return { data: data };
+}
+
+async function ensureBin() {
+  if (BIN_ID) return;
+  var r = await fetch('https://api.jsonbin.io/v2/b', {
+    method: 'POST',
+    headers: { 'X-Master-Key': MASTER_KEY, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ reports: [] })
+  });
+  var data = await r.json();
+  BIN_ID = data.metadata.id;
+  localStorage.setItem('kkfitness_bin_id', BIN_ID);
+  BIN_URL = 'https://api.jsonbin.io/v2/b/' + BIN_ID;
+}
 
 async function loadReports(filter) {
   filter = filter || 'all';
   var list = document.getElementById('report-list');
-  if (!SB_URL) {
-    list.innerHTML = '<div class="empty">Supabase URL is empty</div>';
+  list.innerHTML = '<div class="empty">Loading...</div>';
+  await ensureBin();
+  var result = await jsonbinFetch('GET', '');
+  if (result.error) { list.innerHTML = '<div class="empty">Error: ' + result.error + '</div>'; return; }
+  var allData = result.data && result.data.reports ? result.data.reports : [];
+  allData.sort(function(a,b){ return (b.created_at||'') - (a.created_at||''); });
+  if (!allData.length) {
+    list.innerHTML = '<div class="empty">No reports yet. Click + to create one.</div>';
     return;
   }
-  try {
-    var resp = await fetch(SB_URL + '/rest/v1/reports?select=*&order=created_at.desc', {
-      headers: {
-        'apikey': SB_KEY,
-        'Authorization': 'Bearer ' + SB_KEY,
-        'Prefer': 'count=exact'
-      }
-    });
-    if (!resp.ok) throw new Error('HTTP ' + resp.status);
-    var allData = await resp.json();
-    if (!Array.isArray(allData)) allData = [];
-    if (!allData.length) {
-      list.innerHTML = '<div class="empty">暂无训练报告，点击 + 创建第一个</div>';
-      return;
-    }
-    var filtered = filter === 'all' ? allData : allData.filter(function(r){ return filter === 'done' ? r.status === 'done' : r.status !== 'done'; });
-    list.innerHTML = filtered.map(function(r) {
-      return '<div class="report-card" onclick="location.href=\'coach.html?id=' + r.id + '\'">' +
-        '<div class="report-info"><div class="student">' + (r.student_name||'未命名') + '</div>' +
-        '<div class="meta"><span>📅 ' + (r.session_date||'-') + '</span><span>⏱ ' + (r.duration||60) + '分钟</span><span>🎯 ' + (r.goal||'-') + '</span></div></div>' +
-        '<span class="report-badge ' + (r.status==='done'?'badge-done':'badge-pending') + '">' + (r.status==='done'?'✓ 已发':'⏳ 待发') + '</span></div>';
-    }).join('');
-  } catch(e) {
-    list.innerHTML = '<div class="empty">加载失败: ' + (e.message || e) + '</div>';
-  }
+  var filtered = filter === 'all' ? allData : allData.filter(function(r){ return filter === 'done' ? r.status === 'done' : r.status !== 'done'; });
+  list.innerHTML = filtered.map(function(r) {
+    return '<div class="report-card" onclick="location.href=\'coach.html?id=' + r.id + '\'">' +
+      '<div class="report-info"><div class="student">' + esc(r.student_name||'Unnamed') + '</div>' +
+      '<div class="meta"><span>' + (r.session_date||'-') + '</span><span>' + (r.duration||60) + 'min</span><span>' + (r.goal||'-') + '</span></div></div>' +
+      '<span class="report-badge ' + (r.status==='done'?'badge-done':'badge-pending') + '">' + (r.status==='done'?'Sent':'Pending') + '</span></div>';
+  }).join('');
 }
 
 function showTab(filter) {

@@ -1,9 +1,9 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>创建训练报告</title>
+<title>Create Report</title>
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
   body { font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei', sans-serif; background: #f5f6fa; min-height: 100vh; padding: 24px; }
@@ -34,92 +34,122 @@
 </head>
 <body>
 <div class="container">
-  <div class="back-btn" onclick="location.href='index.html'">← 返回列表</div>
-  <div class="page-title"><h1 id="page-title">+ 创建训练报告</h1></div>
+  <div class="back-btn" onclick="location.href='index.html'">Back to List</div>
+  <div class="page-title"><h1 id="page-title">+ Create Training Report</h1></div>
   <div class="form-card">
     <div class="form-section">
-      <div class="section-label">基本信息</div>
+      <div class="section-label">Basic Info</div>
       <div class="form-row">
-        <div class="form-group"><label>学员姓名</label><input type="text" id="student_name" placeholder="例如：张三" required></div>
-        <div class="form-group"><label>第几课</label><input type="number" id="session_number" value="1" min="1"></div>
+        <div class="form-group"><label>Student Name</label><input type="text" id="student_name" placeholder="e.g. Zhang San" required></div>
+        <div class="form-group"><label>Session Number</label><input type="number" id="session_number" value="1" min="1"></div>
       </div>
       <div class="form-row">
-        <div class="form-group"><label>上课日期</label><input type="date" id="session_date"></div>
-        <div class="form-group"><label>训练时长（分钟）</label><input type="number" id="duration" value="60" min="1"></div>
+        <div class="form-group"><label>Session Date</label><input type="date" id="session_date"></div>
+        <div class="form-group"><label>Duration (min)</label><input type="number" id="duration" value="60" min="1"></div>
       </div>
       <div class="form-row">
-        <div class="form-group"><label>训练目标</label>
-          <select id="goal"><option value="减脂">减脂</option><option value="增肌">增肌</option><option value="塑形">塑形</option><option value="体能提升">体能提升</option><option value="康复训练">康复训练</option></select>
+        <div class="form-group"><label>Goal</label>
+          <select id="goal"><option value="Fat Loss">Fat Loss</option><option value="Muscle Gain">Muscle Gain</option><option value="Shaping">Shaping</option><option value="Fitness">Fitness</option><option value="Rehab">Rehab</option></select>
         </div>
-        <div class="form-group"><label>训练地点</label><input type="text" id="location" placeholder="例如：健身房" value="健身房"></div>
+        <div class="form-group"><label>Location</label><input type="text" id="location" placeholder="e.g. Gym" value="Gym"></div>
       </div>
     </div>
     <div class="form-section">
-      <div class="section-label">训练动作</div>
+      <div class="section-label">Exercises</div>
       <div id="exercise-list"></div>
-      <button class="add-exercise-btn" id="add-ex-btn">+ 添加训练动作</button>
+      <button class="add-exercise-btn" id="add-ex-btn">+ Add Exercise</button>
     </div>
     <div class="form-section">
-      <div class="section-label">体测数据</div>
+      <div class="section-label">Metrics</div>
       <div class="form-row">
-        <div class="form-group"><label>体重 (kg)</label><input type="number" id="weight" step="0.1" placeholder="例如：74.8"></div>
-        <div class="form-group"><label>体脂率 (%)</label><input type="number" id="bodyfat" step="0.1" placeholder="例如：22.1"></div>
+        <div class="form-group"><label>Weight (kg)</label><input type="number" id="weight" step="0.1" placeholder="e.g. 74.8"></div>
+        <div class="form-group"><label>Body Fat (%)</label><input type="number" id="bodyfat" step="0.1" placeholder="e.g. 22.1"></div>
       </div>
       <div class="form-row">
-        <div class="form-group"><label>最大重量 (kg)</label><input type="number" id="max_weight" placeholder="例如：80"></div>
-        <div class="form-group"><label>有氧时长 (分钟)</label><input type="number" id="cardio_time" placeholder="例如：20"></div>
+        <div class="form-group"><label>Max Weight (kg)</label><input type="number" id="max_weight" placeholder="e.g. 80"></div>
+        <div class="form-group"><label>Cardio Time (min)</label><input type="number" id="cardio_time" placeholder="e.g. 20"></div>
       </div>
       <div class="form-row">
-        <div class="form-group"><label>动作评分 (1-10)</label><input type="number" id="action_score" min="1" max="10" placeholder="例如：8"></div>
-        <div class="form-group"><label>状态评分 (1-10)</label><input type="number" id="status_score" min="1" max="10" placeholder="例如：9"></div>
+        <div class="form-group"><label>Action Score (1-10)</label><input type="number" id="action_score" min="1" max="10" placeholder="e.g. 8"></div>
+        <div class="form-group"><label>Status Score (1-10)</label><input type="number" id="status_score" min="1" max="10" placeholder="e.g. 9"></div>
       </div>
     </div>
     <div class="form-section">
-      <div class="section-label">教练评价</div>
-      <div class="form-group" style="margin-bottom:12px"><label>亮点</label><textarea id="highlight" placeholder="今天表现很好的地方..."></textarea></div>
-      <div class="form-group" style="margin-bottom:12px"><label>待改进</label><textarea id="improve" placeholder="需要加强的地方..."></textarea></div>
-      <div class="form-group" style="margin-bottom:12px"><label>关键提示</label><textarea id="tip" placeholder="技术要点或注意事项..."></textarea></div>
-      <div class="form-group"><label>营养建议</label><textarea id="nutrition" placeholder="课后营养补充建议..."></textarea></div>
+      <div class="section-label">Feedback</div>
+      <div class="form-group" style="margin-bottom:12px"><label>Highlight</label><textarea id="highlight" placeholder="What went well today..."></textarea></div>
+      <div class="form-group" style="margin-bottom:12px"><label>Improve</label><textarea id="improve" placeholder="What needs improvement..."></textarea></div>
+      <div class="form-group" style="margin-bottom:12px"><label>Tip</label><textarea id="tip" placeholder="Key tips or notes..."></textarea></div>
+      <div class="form-group"><label>Nutrition</label><textarea id="nutrition" placeholder="Nutrition advice..."></textarea></div>
     </div>
     <div class="form-section">
-      <div class="section-label">下节计划</div>
+      <div class="section-label">Next Session</div>
       <div class="form-row">
-        <div class="form-group"><label>下节日期</label><input type="date" id="next_date"></div>
-        <div class="form-group"><label>下节重点</label><input type="text" id="next_focus" placeholder="例如：胸部力量 + 有氧"></div>
+        <div class="form-group"><label>Next Date</label><input type="date" id="next_date"></div>
+        <div class="form-group"><label>Next Focus</label><input type="text" id="next_focus" placeholder="e.g. Chest + Cardio"></div>
       </div>
-      <div class="form-group"><label>教练留言</label><textarea id="coach_note" placeholder="给学员的鼓励...">继续加油，你进步很快！</textarea></div>
+      <div class="form-group"><label>Coach Note</label><textarea id="coach_note" placeholder="Encouragement for the student...">Keep it up, you are making great progress!</textarea></div>
     </div>
     <div class="btn-row">
-      <button class="btn-cancel" onclick="location.href='index.html'">取消</button>
-      <button class="btn-save" id="save-btn">保存报告</button>
+      <button class="btn-cancel" onclick="location.href='index.html'">Cancel</button>
+      <button class="btn-save" id="save-btn">Save Report</button>
     </div>
   </div>
 </div>
 
 <script>
-var SB_URL = '__SUPABASE_URL__';
-var SB_KEY = '__SUPABASE_ANON_KEY__';
+var MASTER_KEY = '$2a$10$xtOHk9uH7fTP9zDGqQ5FhObZPimIVOe39.U7RjutviV5cNeytzgbi';
+var BIN_ID = localStorage.getItem('kkfitness_bin_id');
+var BIN_URL = 'https://api.jsonbin.io/v2/b/' + BIN_ID;
 
 var editingId = null;
 var exerciseCount = 0;
 
 function getReportId() { return new URLSearchParams(window.location.search).get('id'); }
 
+async function jsonbinFetch(method, path, body) {
+  var opts = {
+    method: method,
+    headers: { 'X-Master-Key': MASTER_KEY, 'Content-Type': 'application/json' }
+  };
+  if (body) opts.body = JSON.stringify(body);
+  var r = await fetch(BIN_URL + path, opts);
+  var text = await r.text();
+  var data;
+  try { data = JSON.parse(text); } catch(e) { data = text; }
+  if (!r.ok) return { error: r.status, data: null };
+  return { data: data };
+}
+
+async function getReports() {
+  var result = await jsonbinFetch('GET', '');
+  if (result.error) return [];
+  return result.data && result.data.reports ? result.data.reports : [];
+}
+
+async function saveReports(reports) {
+  var r = await fetch(BIN_URL, {
+    method: 'PUT',
+    headers: { 'X-Master-Key': MASTER_KEY, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ reports: reports })
+  });
+  return r.ok;
+}
+
 function addExercise(module, name, sets, weight) {
-  module = module || '力量'; name = name || ''; sets = sets || ''; weight = weight || '';
+  module = module || 'Strength'; name = name || ''; sets = sets || ''; weight = weight || '';
   var id = exerciseCount++;
   var el = document.createElement('div');
   el.className = 'exercise-item';
   el.id = 'ex-' + id;
   el.innerHTML =
-    '<div class="exercise-header"><span>动作 ' + (id+1) + '</span><button class="remove-btn" onclick="removeExercise(' + id + ')">x</button></div>' +
+    '<div class="exercise-header"><span>Exercise ' + (id+1) + '</span><button class="remove-btn" onclick="removeExercise(' + id + ')">x</button></div>' +
     '<div class="exercise-row">' +
-      '<select class="ex-module"><option value="热身">热身</option><option value="力量" selected>力量</option><option value="有氧">有氧</option><option value="拉伸">拉伸</option><option value="核心">核心</option></select>' +
-      '<input type="text" class="ex-name" placeholder="动作名称" value="">' +
-      '<input type="text" class="ex-sets" placeholder="组数/时间" value="">' +
-      '<input type="text" class="ex-weight" placeholder="重量" value="">' +
+      '<select class="ex-module"><option value="Warm Up">Warm Up</option><option value="Strength" selected>Strength</option><option value="Cardio">Cardio</option><option value="Stretch">Stretch</option><option value="Core">Core</option></select>' +
+      '<input type="text" class="ex-name" placeholder="Exercise name" value="">' +
+      '<input type="text" class="ex-sets" placeholder="Sets/Time" value="">' +
+      '<input type="text" class="ex-weight" placeholder="Weight" value="">' +
     '</div>';
-  if (module !== '力量') el.querySelector('.ex-module').value = module;
+  if (module !== 'Strength') el.querySelector('.ex-module').value = module;
   if (name) el.querySelector('.ex-name').value = name;
   if (sets) el.querySelector('.ex-sets').value = sets;
   if (weight) el.querySelector('.ex-weight').value = weight;
@@ -148,42 +178,21 @@ function getExercises() {
 
 document.getElementById('add-ex-btn').addEventListener('click', function() { addExercise(); });
 
-async function supabaseFetch(method, path, body) {
-  var opts = {
-    method: method,
-    headers: {
-      'apikey': SB_KEY,
-      'Authorization': 'Bearer ' + SB_KEY,
-      'Content-Type': 'application/json',
-      'Prefer': method === 'POST' ? 'return=representation' : 'return=minimal'
-    }
-  };
-  if (body) opts.body = JSON.stringify(body);
-  var r = await fetch(SB_URL + '/rest/v1/' + path, opts);
-  if (r.status === 204 || method === 'DELETE' || method === 'PATCH') {
-    return { error: r.ok ? null : await r.text(), ok: r.ok };
-  }
-  var text = await r.text();
-  var data;
-  try { data = JSON.parse(text); } catch(e) { data = text; }
-  if (!r.ok) return { error: (data && data.message) || r.status, data: null };
-  return { data: data };
-}
-
 document.getElementById('save-btn').addEventListener('click', async function() {
   var studentName = document.getElementById('student_name').value.trim();
-  if (!studentName) { alert('请输入学员姓名'); return; }
-  if (!SB_URL) { alert('Supabase URL is empty'); return; }
+  if (!studentName) { alert('Please enter student name'); return; }
 
   var report = {
+    id: editingId || Date.now(),
     student_name: studentName,
     session_number: parseInt(document.getElementById('session_number').value) || 1,
     session_date: document.getElementById('session_date').value,
     duration: parseInt(document.getElementById('duration').value) || 60,
     goal: document.getElementById('goal').value,
     location: document.getElementById('location').value,
-    coach_name: '教练',
+    coach_name: 'Coach',
     status: 'pending',
+    created_at: editingId ? undefined : Date.now(),
     report_data: {
       exercises: getExercises(),
       metrics: {
@@ -208,33 +217,32 @@ document.getElementById('save-btn').addEventListener('click', async function() {
     }
   };
 
-  var result;
+  var reports = await getReports();
   if (editingId) {
-    result = await supabaseFetch('PATCH', 'reports?id=eq.' + editingId, report);
+    var idx = reports.findIndex(function(r){ return r.id === editingId; });
+    if (idx >= 0) reports[idx] = report;
   } else {
-    result = await supabaseFetch('POST', 'reports', report);
+    reports.push(report);
   }
 
-  if (result.error) {
-    alert('保存失败: ' + JSON.stringify(result.error));
-  } else {
-    location.href = 'index.html';
-  }
+  var ok = await saveReports(reports);
+  if (ok) location.href = 'index.html';
+  else alert('Save failed');
 });
 
 async function loadExistingReport(id) {
-  var result = await supabaseFetch('GET', 'reports?id=eq.' + id + '&select=*');
-  if (result.error || !result.data || !result.data.length) return;
-  var data = result.data[0];
+  var reports = await getReports();
+  var r = reports.find(function(r){ return r.id === id; });
+  if (!r) return;
   editingId = id;
-  document.getElementById('page-title').textContent = '编辑训练报告';
-  document.getElementById('student_name').value = data.student_name || '';
-  document.getElementById('session_number').value = data.session_number || 1;
-  document.getElementById('session_date').value = data.session_date || '';
-  document.getElementById('duration').value = data.duration || 60;
-  document.getElementById('goal').value = data.goal || '减脂';
-  document.getElementById('location').value = data.location || '健身房';
-  var rd = data.report_data || {};
+  document.getElementById('page-title').textContent = 'Edit Report';
+  document.getElementById('student_name').value = r.student_name || '';
+  document.getElementById('session_number').value = r.session_number || 1;
+  document.getElementById('session_date').value = r.session_date || '';
+  document.getElementById('duration').value = r.duration || 60;
+  document.getElementById('goal').value = r.goal || 'Fat Loss';
+  document.getElementById('location').value = r.location || 'Gym';
+  var rd = r.report_data || {};
   var exs = rd.exercises || [];
   if (exs.length === 0) addExercise(); else exs.forEach(function(ex){ addExercise(ex.module, ex.name, ex.sets, ex.weight); });
   var m = rd.metrics || {};
