@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>璁粌鎶ュ憡 - 棣栭〉</title>
+<title>Fitness Report - Home</title>
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
   body { font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei', sans-serif; background: #f5f6fa; min-height: 100vh; padding: 24px; }
@@ -29,42 +29,41 @@
 <body>
 <div class="container">
   <div class="page-title">
-    <h1>馃弸锔忊€嶁檪锔?鍋ヨ韩璁粌鎶ュ憡绯荤粺</h1>
-    <p id="coach-name">鏁欑粌绔?路 鍔犺浇涓?..</p>
+    <h1>Fitness Training Report</h1>
+    <p id="coach-name">Coach - Loading...</p>
   </div>
   <div class="tabs">
-    <button class="tab active" onclick="showTab('all')">鍏ㄩ儴鎶ュ憡</button>
-    <button class="tab" onclick="showTab('done')">宸插畬鎴?/button>
-    <button class="tab" onclick="showTab('pending')">寰呭畬鎴?/button>
+    <button class="tab active" onclick="showTab('all')">All Reports</button>
+    <button class="tab" onclick="showTab('done')">Completed</button>
+    <button class="tab" onclick="showTab('pending')">Pending</button>
   </div>
   <div id="report-list" class="report-list">
-    <div class="empty">姝ｅ湪鍔犺浇璁粌鎶ュ憡...</div>
+    <div class="empty">Loading reports...</div>
   </div>
 </div>
 <button class="add-btn" onclick="location.href='create.html'">+</button>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
-var __SUPABASE_URL__ = 'https://tjdrzjucvwebclsfvgrr.supabase.co';
-var __SUPABASE_ANON_KEY__ = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRqZHJ6anVjdndlYmNsc2Z2Z3JyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ1ODc0MDUsImV4cCI6MjA5MDE2MzQwNX0.74kAxC0LhBLHY-k-FI90MFvpGp_I3E5uLH1KNP6QRWc';
+var supabaseUrl = 'https://tjdrzjucvwebclsfvgrr.supabase.co';
+var supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRqZHJ6anVjdndlYmNsc2Z2Z3JyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ1ODc0MDUsImV4cCI6MjA5MDE2MzQwNX0.74kAxC0LhBLHY-k-FI90MFvpGp_I3E5uLH1KNP6QRWc';
 var supabase = null;
 if (typeof window.Supabase !== 'undefined') {
-  supabase = window.Supabase.createClient(__SUPABASE_URL__, __SUPABASE_ANON_KEY__);
+  supabase = window.Supabase.createClient(supabaseUrl, supabaseKey);
 }
 
 async function loadReports(filter) {
   var list = document.getElementById('report-list');
-  if (!supabase) { list.innerHTML = '<div class="empty">鈿狅笍 Supabase 鏈厤缃?/div>'; return; }
+  if (!supabase) { list.innerHTML = '<div class="empty">Supabase not configured</div>'; return; }
   var result = await supabase.from('reports').select('*').order('created_at', { ascending: false });
-  if (result.error) { list.innerHTML = '<div class="empty">鍔犺浇澶辫触</div>'; return; }
+  if (result.error) { list.innerHTML = '<div class="empty">Load failed</div>'; return; }
   var data = result.data || [];
-  if (data.length === 0) { list.innerHTML = '<div class="empty">鏆傛棤璁粌鎶ュ憡</div>'; return; }
-  var filtered = filter === 'all' ? data : data.filter(function(r) { return filter === 'done' ? r.status === 'done' : r.status !== 'done'; });
-  list.innerHTML = filtered.map(function(r) {
+  if (data.length === 0) { list.innerHTML = '<div class="empty">No reports yet</div>'; return; }
+  list.innerHTML = data.map(function(r) {
     return '<div class="report-card" onclick="location.href=\'coach.html?id=' + r.id + '\'">' +
-      '<div class="report-info"><div class="student">' + (r.student_name || '鏈煡') + '</div>' +
-      '<div class="meta"><span>馃搮 ' + (r.session_date || '-') + '</span><span>鈴?' + (r.duration || 60) + '鍒嗛挓</span><span>馃幆 ' + (r.goal || '-') + '</span></div></div>' +
-      '<span class="report-badge ' + (r.status === 'done' ? 'badge-done' : 'badge-pending') + '">' + (r.status === 'done' ? '鉁?宸插彂' : '鈴?寰呭彂') + '</span></div>';
+      '<div class="report-info"><div class="student">' + (r.student_name || 'Unknown') + '</div>' +
+      '<div class="meta"><span>Date: ' + (r.session_date || '-') + '</span><span>' + (r.duration || 60) + 'min</span><span>' + (r.goal || '-') + '</span></div></div>' +
+      '<span class="report-badge ' + (r.status === 'done' ? 'badge-done' : 'badge-pending') + '">' + (r.status === 'done' ? 'Done' : 'Pending') + '</span></div>';
   }).join('');
 }
 
@@ -74,10 +73,7 @@ function showTab(filter) {
   loadReports(filter);
 }
 
-async function init() {
-  loadReports('all');
-}
-init();
+loadReports('all');
 </script>
 </body>
 </html>
