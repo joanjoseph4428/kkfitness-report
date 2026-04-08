@@ -3,44 +3,36 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>创建/编辑训练报告</title>
+<title>创建训练报告</title>
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
   body { font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei', sans-serif; background: #f5f6fa; min-height: 100vh; padding: 24px; }
   .container { max-width: 720px; margin: 0 auto; }
-  .page-title { text-align: center; margin-bottom: 24px; }
-  .page-title h1 { font-size: 20px; color: #1a1a2e; font-weight: 700; }
   .back-btn { display: inline-flex; align-items: center; gap: 6px; color: #4f46e5; font-size: 14px; font-weight: 500; text-decoration: none; margin-bottom: 20px; cursor: pointer; }
   .form-card { background: #fff; border-radius: 16px; padding: 28px; box-shadow: 0 4px 24px rgba(0,0,0,0.06); }
   .form-section { margin-bottom: 28px; }
-  .form-section:last-child { margin-bottom: 0; }
   .section-label { font-size: 13px; font-weight: 700; color: #888; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 16px; padding-bottom: 8px; border-bottom: 1px solid #f0f0f0; }
   .form-row { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; margin-bottom: 16px; }
-  .form-row.single { grid-template-columns: 1fr; }
   .form-group { display: flex; flex-direction: column; gap: 6px; }
   .form-group label { font-size: 12px; font-weight: 600; color: #555; }
-  .form-group input, .form-group select, .form-group textarea { padding: 10px 14px; border: 1.5px solid #e8eaf0; border-radius: 10px; font-size: 14px; font-family: inherit; outline: none; transition: border-color 0.2s; }
-  .form-group input:focus, .form-group textarea:focus { border-color: #4f46e5; }
+  .form-group input, .form-group select, .form-group textarea { padding: 10px 14px; border: 1.5px solid #e8eaf0; border-radius: 10px; font-size: 14px; font-family: inherit; outline: none; }
   .form-group textarea { resize: vertical; min-height: 80px; }
   .exercise-item { background: #f8f9fc; border-radius: 12px; padding: 16px; margin-bottom: 12px; }
   .exercise-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
   .exercise-header span { font-size: 13px; font-weight: 600; color: #4f46e5; }
   .remove-btn { background: none; border: none; color: #dc2626; cursor: pointer; font-size: 18px; }
   .exercise-row { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 8px; margin-bottom: 8px; }
-  .exercise-row input { padding: 8px 10px; border: 1.5px solid #e8eaf0; border-radius: 8px; font-size: 13px; }
+  .exercise-row input, .exercise-row select { padding: 8px 10px; border: 1.5px solid #e8eaf0; border-radius: 8px; font-size: 13px; }
   .add-exercise-btn { width: 100%; padding: 10px; border: 2px dashed #e8eaf0; border-radius: 10px; background: none; color: #888; font-size: 14px; cursor: pointer; }
-  .add-exercise-btn:hover { border-color: #4f46e5; color: #4f46e5; }
   .btn-row { display: flex; gap: 12px; margin-top: 24px; }
   .btn-save { flex: 1; padding: 14px; background: #4f46e5; color: #fff; border: none; border-radius: 12px; font-size: 16px; font-weight: 600; cursor: pointer; }
-  .btn-save:hover { background: #4338ca; }
   .btn-cancel { padding: 14px 24px; background: #fff; color: #666; border: 1.5px solid #e8eaf0; border-radius: 12px; font-size: 14px; font-weight: 600; cursor: pointer; text-decoration: none; display: flex; align-items: center; }
   .loading { text-align: center; padding: 40px; color: #aaa; }
 </style>
 </head>
 <body>
 <div class="container">
-  <div class="back-btn" onclick="location.href='index.html'">← 返回列表</div>
-  <div class="page-title"><h1 id="page-title">📋 创建训练报告</h1></div>
+  <div class="back-btn" onclick="location.href='index.html'">返回列表</div>
   <div class="form-card">
     <div class="form-section">
       <div class="section-label">基本信息</div>
@@ -102,79 +94,86 @@
         <div class="form-group"><label>下次日期</label><input type="date" id="next_date"></div>
         <div class="form-group"><label>下次重点</label><input type="text" id="next_focus" placeholder="如：腿部力量 + 有氧耐力"></div>
       </div>
-      <div class="form-group"><label>教练留言</label><textarea id="coach_note" placeholder="给学员的鼓励话...">继续加油，你进步很快！按这个节奏下去，下次体测数据一定会更好看 💪</textarea></div>
+      <div class="form-group"><label>教练留言</label><textarea id="coach_note" placeholder="给学员的鼓励话...">继续加油，你进步很快！按这个节奏下去，下次体测数据一定会更好看</textarea></div>
     </div>
 
     <div class="btn-row">
       <button class="btn-cancel" onclick="location.href='index.html'">取消</button>
-      <button class="btn-save" onclick="saveReport()">💾 保存报告</button>
+      <button class="btn-save" onclick="saveReport()">保存报告</button>
     </div>
   </div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
-const SUPABASE_URL = '__SUPABASE_URL__';
-const SUPABASE_ANON_KEY = '__SUPABASE_ANON_KEY__';
-const supabase = (SUPABASE_URL && SUPABASE_ANON_KEY) ? createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
+(function() {
+  var supabaseUrl = 'https://bkdxarxrhwjypcdvyify.supabase.co';
+  var supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJrZHhhcnhyaHdqeXBjZHZ5aWZ5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUxODI3MDMsImV4cCI6MjA5MDc1ODcwM30.nxOXtlTiesUd-dE0wWfaYrynKae8t1IYDAqTCZifrv0';
+  var supabase = null;
+  if (typeof window.supabase !== 'undefined' && window.supabase) {
+    supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+  }
+  window._supabase = supabase;
+})();
 
-let editingId = null;
-let exerciseCount = 0;
+var editingId = null;
+var exerciseCount = 0;
 
 function getReportId() {
-  const params = new URLSearchParams(window.location.search);
+  var params = new URLSearchParams(window.location.search);
   return params.get('id');
 }
 
-function addExercise(module = '力量', name = '', sets = '', weight = '') {
-  const list = document.getElementById('exercise-list');
-  const id = exerciseCount++;
-  list.insertAdjacentHTML('beforeend', `
-    <div class="exercise-item" id="ex-${id}">
-      <div class="exercise-header">
-        <span>动作 ${exerciseCount}</span>
-        <button class="remove-btn" onclick="removeExercise(${id})">×</button>
-      </div>
-      <div class="exercise-row">
-        <select class="ex-module"><option value="热身">热身</option><option value="力量" selected>力量</option><option value="有氧">有氧</option><option value="拉伸">拉伸</option><option value="核心">核心</option></select>
-        <input type="text" class="ex-name" placeholder="动作名称" value="${name}">
-        <input type="text" class="ex-sets" placeholder="组数/时长" value="${sets}">
-        <input type="text" class="ex-weight" placeholder="重量" value="${weight}">
-      </div>
-    </div>
-  `);
-  if (module !== '力量') {
-    document.querySelector(`#ex-${id} .ex-module`).value = module;
+function addExercise(module, name, sets, weight) {
+  var list = document.getElementById('exercise-list');
+  var id = exerciseCount++;
+  var el = document.createElement('div');
+  el.className = 'exercise-item';
+  el.id = 'ex-' + id;
+  el.innerHTML =
+    '<div class="exercise-header"><span>动作 ' + exerciseCount + '</span><button class="remove-btn" onclick="removeExercise(' + id + ')">x</button></div>' +
+    '<div class="exercise-row">' +
+      '<select class="ex-module"><option value="热身">热身</option><option value="力量" selected>力量</option><option value="有氧">有氧</option><option value="拉伸">拉伸</option><option value="核心">核心</option></select>' +
+      '<input type="text" class="ex-name" placeholder="动作名称" value="' + (name || '') + '">' +
+      '<input type="text" class="ex-sets" placeholder="组数/时长" value="' + (sets || '') + '">' +
+      '<input type="text" class="ex-weight" placeholder="重量" value="' + (weight || '') + '">' +
+    '</div>';
+  list.appendChild(el);
+  if (module && module !== '力量') {
+    el.querySelector('.ex-module').value = module;
   }
 }
 
 function removeExercise(id) {
-  document.getElementById(`ex-${id}`).remove();
+  var el = document.getElementById('ex-' + id);
+  if (el) el.remove();
 }
 
 function getExercises() {
-  const items = document.querySelectorAll('.exercise-item');
-  return Array.from(items).map(item => ({
-    module: item.querySelector('.ex-module').value,
-    name: item.querySelector('.ex-name').value,
-    sets: item.querySelector('.ex-sets').value,
-    weight: item.querySelector('.ex-weight').value
-  }));
+  var items = document.querySelectorAll('.exercise-item');
+  return Array.prototype.slice.call(items).map(function(item) {
+    return {
+      module: item.querySelector('.ex-module').value,
+      name: item.querySelector('.ex-name').value,
+      sets: item.querySelector('.ex-sets').value,
+      weight: item.querySelector('.ex-weight').value
+    };
+  });
 }
 
 async function saveReport() {
-  const studentName = document.getElementById('student_name').value.trim();
+  var studentName = document.getElementById('student_name').value.trim();
   if (!studentName) { alert('请输入学员姓名'); return; }
+  var supabase = window._supabase;
   if (!supabase) { alert('Supabase 未配置，无法保存'); return; }
 
-  const report = {
+  var report = {
     student_name: studentName,
     session_number: parseInt(document.getElementById('session_number').value) || 1,
-    session_date: document.getElementById('session_date').value,
+    session_date: document.getElementById('session_date').value || null,
     duration: parseInt(document.getElementById('duration').value) || 60,
     goal: document.getElementById('goal').value,
-    location: document.getElementById('location').value,
-    coach_name: '教练',
+    location: document.getElementById('location').value || '器械区',
     status: 'pending',
     report_data: {
       exercises: getExercises(),
@@ -200,7 +199,7 @@ async function saveReport() {
     }
   };
 
-  let result;
+  var result;
   if (editingId) {
     result = await supabase.from('reports').update(report).eq('id', editingId);
   } else {
@@ -210,48 +209,56 @@ async function saveReport() {
   if (result.error) {
     alert('保存失败: ' + result.error.message);
   } else {
-    alert(editingId ? '报告已更新！' : '报告已创建！');
     location.href = 'index.html';
   }
 }
 
-async function loadExistingReport(id) {
-  const { data, error } = await supabase.from('reports').select('*').eq('id', id).single();
-  if (error || !data) return;
+async function loadExistingReport() {
+  var id = getReportId();
+  if (!id) return;
   editingId = id;
-  document.getElementById('page-title').textContent = '✏️ 编辑训练报告';
-  document.getElementById('student_name').value = data.student_name || '';
-  document.getElementById('session_number').value = data.session_number || 1;
-  document.getElementById('session_date').value = data.session_date || '';
-  document.getElementById('duration').value = data.duration || 60;
-  document.getElementById('goal').value = data.goal || '减脂';
-  document.getElementById('location').value = data.location || '器械区';
-  const rd = data.report_data || {};
-  const exs = rd.exercises || [];
-  if (exs.length === 0) addExercise();
-  else exs.forEach(ex => addExercise(ex.module, ex.name, ex.sets, ex.weight));
-  const m = rd.metrics || {};
-  ['weight','bodyfat','max_weight','cardio_time','action_score','status_score'].forEach(k => document.getElementById(k).value = m[k] || '');
-  const c = rd.comments || {};
-  ['highlight','improve','tip','nutrition','coach_note'].forEach(k => document.getElementById(k).value = c[k] || '');
-  const ns = rd.next_session || {};
+  document.title = '修改训练报告';
+  document.getElementById('page-title') && (document.getElementById('page-title').textContent = '修改训练报告');
+
+  var supabase = window._supabase;
+  if (!supabase) return;
+
+  var result = await supabase.from('reports').select('*').eq('id', id).single();
+  if (result.error || !result.data) return;
+
+  var r = result.data;
+  document.getElementById('student_name').value = r.student_name || '';
+  document.getElementById('session_number').value = r.session_number || 1;
+  document.getElementById('session_date').value = r.session_date || '';
+  document.getElementById('duration').value = r.duration || 60;
+  document.getElementById('goal').value = r.goal || '减脂';
+  document.getElementById('location').value = r.location || '器械区';
+
+  var data = r.report_data || {};
+  var exs = data.exercises || [];
+  exs.forEach(function(ex) { addExercise(ex.module, ex.name, ex.sets, ex.weight); });
+
+  var m = data.metrics || {};
+  document.getElementById('weight').value = m.weight || '';
+  document.getElementById('bodyfat').value = m.bodyfat || '';
+  document.getElementById('max_weight').value = m.max_weight || '';
+  document.getElementById('cardio_time').value = m.cardio_time || '';
+  document.getElementById('action_score').value = m.action_score || '';
+  document.getElementById('status_score').value = m.status_score || '';
+
+  var c = data.comments || {};
+  document.getElementById('highlight').value = c.highlight || '';
+  document.getElementById('improve').value = c.improve || '';
+  document.getElementById('tip').value = c.tip || '';
+  document.getElementById('nutrition').value = c.nutrition || '';
+  document.getElementById('coach_note').value = c.coach_note || '';
+
+  var ns = data.next_session || {};
   document.getElementById('next_date').value = ns.date || '';
   document.getElementById('next_focus').value = ns.focus || '';
 }
 
-async function init() {
-  const id = getReportId();
-  if (id) {
-    await loadExistingReport(id);
-  } else {
-    addExercise();
-  }
-  // set default date to today
-  if (!document.getElementById('session_date').value) {
-    document.getElementById('session_date').value = new Date().toISOString().split('T')[0];
-  }
-}
-init();
+loadExistingReport();
 </script>
 </body>
 </html>
