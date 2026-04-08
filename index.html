@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>训练报告 - 首页</title>
+<title>璁粌鎶ュ憡 - 棣栭〉</title>
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
   body { font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei', sans-serif; background: #f5f6fa; min-height: 100vh; padding: 24px; }
@@ -29,47 +29,48 @@
 <body>
 <div class="container">
   <div class="page-title">
-    <h1>🏋️‍♂️ 健身训练报告系统</h1>
-    <p id="coach-name">教练端 · 加载中...</p>
+    <h1>馃弸锔忊€嶁檪锔?鍋ヨ韩璁粌鎶ュ憡绯荤粺</h1>
+    <p id="coach-name">鏁欑粌绔?路 鍔犺浇涓?..</p>
   </div>
   <div class="tabs">
-    <button class="tab active" onclick="showTab('all')">全部报告</button>
-    <button class="tab" onclick="showTab('done')">已完成</button>
-    <button class="tab" onclick="showTab('pending')">待完成</button>
+    <button class="tab active" onclick="showTab('all')">鍏ㄩ儴鎶ュ憡</button>
+    <button class="tab" onclick="showTab('done')">宸插畬鎴?/button>
+    <button class="tab" onclick="showTab('pending')">寰呭畬鎴?/button>
   </div>
   <div id="report-list" class="report-list">
-    <div class="empty">正在加载训练报告...</div>
+    <div class="empty">姝ｅ湪鍔犺浇璁粌鎶ュ憡...</div>
   </div>
 </div>
 <button class="add-btn" onclick="location.href='create.html'">+</button>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 const SUPABASE_URL = '__SUPABASE_URL__';
 const SUPABASE_ANON_KEY = '__SUPABASE_ANON_KEY__';
 const { createClient } = window.Supabase || {};
-const supabase = SUPABASE_URL !== '__SUPABASE_URL__' ? createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
+const supabase = (SUPABASE_URL && SUPABASE_ANON_KEY) ? createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
 
 async function loadReports(filter = 'all') {
   const list = document.getElementById('report-list');
   if (!supabase) {
-    list.innerHTML = '<div class="empty">⚠️ Supabase 未配置，请检查环境变量</div>';
+    list.innerHTML = '<div class="empty">鈿狅笍 Supabase 鏈厤缃紝璇锋鏌ョ幆澧冨彉閲?/div>';
     return;
   }
   const { data, error } = await supabase.from('reports').select('*').order('created_at', { ascending: false });
-  if (error) { list.innerHTML = `<div class="empty">加载失败: ${error.message}</div>`; return; }
-  if (!data || data.length === 0) { list.innerHTML = '<div class="empty">暂无训练报告，点击 + 创建第一个</div>'; return; }
+  if (error) { list.innerHTML = `<div class="empty">鍔犺浇澶辫触: ${error.message}</div>`; return; }
+  if (!data || data.length === 0) { list.innerHTML = '<div class="empty">鏆傛棤璁粌鎶ュ憡锛岀偣鍑?+ 鍒涘缓绗竴涓?/div>'; return; }
   const filtered = filter === 'all' ? data : data.filter(r => filter === 'done' ? r.status === 'done' : r.status !== 'done');
   list.innerHTML = filtered.map(r => `
     <div class="report-card" onclick="location.href='coach.html?id=${r.id}'">
       <div class="report-info">
-        <div class="student">${r.student_name || '未命名学员'}</div>
+        <div class="student">${r.student_name || '鏈懡鍚嶅鍛?}</div>
         <div class="meta">
-          <span>📅 ${r.session_date || '-'}</span>
-          <span>⏱ ${r.duration || 60}分钟</span>
-          <span>🎯 ${r.goal || '-'}</span>
+          <span>馃搮 ${r.session_date || '-'}</span>
+          <span>鈴?${r.duration || 60}鍒嗛挓</span>
+          <span>馃幆 ${r.goal || '-'}</span>
         </div>
       </div>
-      <span class="report-badge ${r.status === 'done' ? 'badge-done' : 'badge-pending'}">${r.status === 'done' ? '✓ 已发' : '⏳ 待发'}</span>
+      <span class="report-badge ${r.status === 'done' ? 'badge-done' : 'badge-pending'}">${r.status === 'done' ? '鉁?宸插彂' : '鈴?寰呭彂'}</span>
     </div>
   `).join('');
 }
@@ -85,13 +86,12 @@ async function init() {
     const { data } = await supabase.auth.getSession();
     if (data.session) {
       const user = data.session.user;
-      document.getElementById('coach-name').textContent = `教练端 · ${user.email}`;
+      document.getElementById('coach-name').textContent = `鏁欑粌绔?路 ${user.email}`;
     }
   }
   loadReports();
 }
 init();
 </script>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 </body>
 </html>
