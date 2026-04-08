@@ -1,9 +1,1 @@
-{
-  "name": "kkfitness-report",
-  "version": "1.0.0",
-  "description": "健身训练报告系统",
-  "scripts": {
-    "build": "echo 'No build needed, pure static HTML'",
-    "now-build": "echo 'No build needed, pure static HTML'"
-  }
-}
+{"name":"kkfitness-report","version":"1.0.0","scripts":{"build":"node inject.js","now-build":"node inject.js"}}
