@@ -49,12 +49,18 @@
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
-const SUPABASE_URL = '__SUPABASE_URL__';
-const SUPABASE_ANON_KEY = '__SUPABASE_ANON_KEY__';
-const supabase = (SUPABASE_URL && SUPABASE_ANON_KEY) ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
+(function() {
+  var supabaseUrl = 'https://bkdxarxrhwjypcdvyify.supabase.co';
+  var supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJrZHhhcnhyaHdqeXBjZHZ5aWZ5Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUxODI3MDMsImV4cCI6MjA5MDc1ODcwM30.nxOXtlTiesUd-dE0wWfaYrynKae8t1IYDAqTCZifrv0';
+  var supabase = null;
+  if (typeof window.supabase !== 'undefined' && window.supabase) {
+    supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
+  }
+  window._supabase = supabase;
+})();
 
 function getReportId() { return new URLSearchParams(window.location.search).get('id'); }
-function esc(s) { return (s||'').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function esc(s) { return ((s || '') + '').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
 
 function renderReport(r) {
   var data = r.report_data || {};
@@ -62,54 +68,54 @@ function renderReport(r) {
   var metrics = data.metrics || {};
   var comments = data.comments || {};
   var nextSession = data.next_session || {};
-  var exHtml = exercises.map(function(ex){
-    return '<tr><td><span class="module-tag">'+esc(ex.module||'')+'</span></td><td>'+esc(ex.name||'')+'</td><td>'+esc(ex.sets||'')+'</td><td>'+esc(ex.weight||'')+'</td><td><span class="done-badge">✓</span></td></tr>';
-  }).join('');
-  document.title = esc(r.student_name||'训练报告') + ' - 报告';
+
+  document.title = (r.student_name || '学员') + ' - 训练报告';
   document.getElementById('content').innerHTML = [
     '<div class="report-card">',
       '<div class="card-header">',
-        '<div class="session-tag">第 ' + (r.session_number||1) + ' 次课 · ' + esc(r.goal||'训练') + '</div>',
-        '<div class="student-name">'+esc(r.student_name||'学员')+'</div>',
+        '<div class="session-tag">第 ' + (r.session_number || 1) + ' 次课 | ' + esc(r.goal || '训练') + '</div>',
+        '<div class="student-name">' + esc(r.student_name || '学员') + '</div>',
         '<div class="session-meta">',
-          '<span>📅 '+(r.session_date||'-')+'</span>',
-          '<span>⏱ '+(r.duration||60)+'分钟</span>',
-          '<span>📍 '+(r.location||'器械区')+'</span>',
+          '<span>日期: ' + esc(r.session_date || '-') + '</span>',
+          '<span>' + (r.duration || 60) + '分钟</span>',
+          '<span>' + esc(r.location || '器械区') + '</span>',
         '</div>',
       '</div>',
       '<div class="section"><div class="section-title"><span class="dot"></span>训练内容</div>',
-        '<table class="training-table"><thead><tr><th>模块</th><th>动作</th><th>组数/时长</th><th>重量</th><th>完成</th></tr></thead><tbody>'+exHtml+'</tbody></table>',
+        '<table class="training-table"><thead><tr><th>模块</th><th>动作</th><th>组数</th><th>重量</th><th>完成</th></tr></thead><tbody>' +
+        exercises.map(function(ex) {
+          return '<tr><td><span class="module-tag">' + esc(ex.module || '') + '</span></td><td>' + esc(ex.name || '') + '</td><td>' + esc(ex.sets || '') + '</td><td>' + esc(ex.weight || '') + '</td><td><span class="done-badge">V</span></td></tr>';
+        }).join('') + '</tbody></table>',
       '</div>',
-      '<div class="section"><div class="section-title"><span class="dot"></span>体测数据</div><div class="metrics-grid">',
-        '<div class="metric-item"><div class="metric-label">体重</div><div class="metric-value">'+esc(metrics.weight||'-')+' <span class="metric-unit">kg</span></div></div>',
-        '<div class="metric-item"><div class="metric-label">体脂</div><div class="metric-value">'+esc(metrics.bodyfat||'-')+' <span class="metric-unit">%</span></div></div>',
-        '<div class="metric-item"><div class="metric-label">最大重量</div><div class="metric-value highlight">'+esc(metrics.max_weight||'-')+' <span class="metric-unit">kg</span></div></div>',
-        '<div class="metric-item"><div class="metric-label">有氧时长</div><div class="metric-value">'+esc(metrics.cardio_time||'-')+' <span class="metric-unit">min</span></div></div>',
-        '<div class="metric-item"><div class="metric-label">行动分</div><div class="metric-value highlight">'+esc(metrics.action_score||'-')+'</div></div>',
-        '<div class="metric-item"><div class="metric-label">状态分</div><div class="metric-value highlight">'+esc(metrics.status_score||'-')+'</div></div>',
+      '<div class="section"><div class="section-title"><span class="dot"></span>体测数据</div><div class="metrics-grid">' +
+        '<div class="metric-item"><div class="metric-label">体重</div><div class="metric-value">' + esc(metrics.weight || '-') + ' <span class="metric-unit">kg</span></div></div>' +
+        '<div class="metric-item"><div class="metric-label">体脂</div><div class="metric-value">' + esc(metrics.bodyfat || '-') + ' <span class="metric-unit">%</span></div></div>' +
+        '<div class="metric-item"><div class="metric-label">最大重量</div><div class="metric-value highlight">' + esc(metrics.max_weight || '-') + ' <span class="metric-unit">kg</span></div></div>' +
+        '<div class="metric-item"><div class="metric-label">有氧时长</div><div class="metric-value">' + esc(metrics.cardio_time || '-') + ' <span class="metric-unit">min</span></div></div>' +
+        '<div class="metric-item"><div class="metric-label">动作评分</div><div class="metric-value highlight">' + esc(metrics.action_score || '-') + '</div></div>' +
+        '<div class="metric-item"><div class="metric-label">状态评分</div><div class="metric-value highlight">' + esc(metrics.status_score || '-') + '</div></div>' +
       '</div></div>',
-      '<div class="section"><div class="section-title"><span class="dot"></span>教练反馈</div><div class="comment-box">',
-        '<div class="comment-row"><div class="comment-label">亮点</div><div class="comment-text">'+esc(comments.highlight||'表现不错！')+'</div></div>',
-        '<div class="comment-row"><div class="comment-label">待提升</div><div class="comment-text">'+esc(comments.improve||'') +'</div></div>',
-        '<div class="comment-row"><div class="comment-label">小贴士</div><div class="comment-text">'+esc(comments.tip||'') +'</div></div>',
-        '<div class="comment-row"><div class="comment-label">营养建议</div><div class="comment-text">'+esc(comments.nutrition||'') +'</div></div>',
+      '<div class="section"><div class="section-title"><span class="dot"></span>教练反馈</div><div class="comment-box">' +
+        '<div class="comment-row"><div class="comment-label">亮点</div><div class="comment-text">' + esc(comments.highlight || '表现不错！') + '</div></div>' +
+        '<div class="comment-row"><div class="comment-label">待提升</div><div class="comment-text">' + esc(comments.improve || '') + '</div></div>' +
+        '<div class="comment-row"><div class="comment-label">小贴士</div><div class="comment-text">' + esc(comments.tip || '') + '</div></div>' +
+        '<div class="comment-row"><div class="comment-label">营养建议</div><div class="comment-text">' + esc(comments.nutrition || '') + '</div></div>' +
       '</div></div>',
-      nextSession.date ? '<div class="section"><div class="section-title"><span class="dot"></span>下次课安排</div><div class="next-session"><div class="next-date">'+esc(nextSession.date)+'</div><div class="next-focus">'+esc(nextSession.focus||'综合训练')+'</div></div></div>' : '',
-      '<div class="section"><div class="section-title"><span class="dot"></span>教练寄语</div>',
-        '<div class="coach-note">'+esc(comments.coach_note||'继续保持！')+'</div>',
-      '</div>',
+      nextSession.date ? '<div class="section"><div class="section-title"><span class="dot"></span>下次课安排</div><div class="next-session"><div class="next-date">日期: ' + esc(nextSession.date) + '</div><div class="next-focus">' + esc(nextSession.focus || '综合训练') + '</div></div></div>' : '',
+      '<div class="section"><div class="section-title"><span class="dot"></span>教练寄语</div><div class="coach-note">' + esc(comments.coach_note || '继续保持！') + '</div></div>',
     '</div>',
-    '<div class="footer">教练：'+esc(r.coach_name||'教练')+' | '+(r.session_date||'')+'</div>'
+    '<div class="footer">教练: ' + esc(r.coach_name || '教练') + ' | ' + esc(r.session_date || '') + '</div>'
   ].join('');
 }
 
 async function loadReport() {
   var id = getReportId();
   if (!id) { document.getElementById('content').innerHTML = '<div class="loading">缺少报告ID</div>'; return; }
-  if (!supabase) { document.getElementById('content').innerHTML = '<div class="loading">⚠️ 数据源未配置</div>'; return; }
-  var { data, error } = await supabase.from('reports').select('*').eq('id', id).single();
-  if (error || !data) { document.getElementById('content').innerHTML = '<div class="loading">报告不存在或加载失败</div>'; return; }
-  renderReport(data);
+  var supabase = window._supabase;
+  if (!supabase) { document.getElementById('content').innerHTML = '<div class="loading">数据源未配置</div>'; return; }
+  var result = await supabase.from('reports').select('*').eq('id', id).single();
+  if (result.error || !result.data) { document.getElementById('content').innerHTML = '<div class="loading">报告不存在</div>'; return; }
+  renderReport(result.data);
 }
 loadReport();
 </script>
