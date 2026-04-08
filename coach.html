@@ -66,7 +66,7 @@
 <script>
 const SUPABASE_URL = '__SUPABASE_URL__';
 const SUPABASE_ANON_KEY = '__SUPABASE_ANON_KEY__';
-const supabase = SUPABASE_URL !== '__SUPABASE_URL__' ? createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
+const supabase = (SUPABASE_URL \&\& SUPABASE_ANON_KEY) ? createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
 
 function getReportId() {
   const params = new URLSearchParams(window.location.search);
