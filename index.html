@@ -49,8 +49,8 @@
   var supabaseUrl = 'https://tjdrzjucvwebclsfvgrr.supabase.co';
   var supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRqZHJ6anVjdndlYmNsc2Z2Z3JyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ1ODc0MDUsImV4cCI6MjA5MDE2MzQwNX0.74kAxC0LhBLHY-k-FI90MFvpGp_I3E5uLH1KNP6QRWc';
   var supabase = null;
-  if (typeof window.Supabase !== 'undefined' && window.Supabase) {
-    supabase = window.Supabase.createClient(supabaseUrl, supabaseKey);
+  if (typeof window.supabase !== 'undefined' && window.supabase) {
+    supabase = window.supabase.createClient(supabaseUrl, supabaseKey);
   }
   window._supabase = supabase;
 })();
