@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Fitness Report - Home</title>
+<title>训练报告 - 首页</title>
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
   body { font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei', sans-serif; background: #f5f6fa; min-height: 100vh; padding: 24px; }
@@ -29,42 +29,57 @@
 <body>
 <div class="container">
   <div class="page-title">
-    <h1>Fitness Training Report</h1>
-    <p id="coach-name">Coach - Loading...</p>
+    <h1>健身训练报告系统</h1>
+    <p id="coach-name">教练端 · 加载中...</p>
   </div>
   <div class="tabs">
-    <button class="tab active" onclick="showTab('all')">All Reports</button>
-    <button class="tab" onclick="showTab('done')">Completed</button>
-    <button class="tab" onclick="showTab('pending')">Pending</button>
+    <button class="tab active" onclick="showTab('all')">全部报告</button>
+    <button class="tab" onclick="showTab('done')">已完成</button>
+    <button class="tab" onclick="showTab('pending')">待完成</button>
   </div>
   <div id="report-list" class="report-list">
-    <div class="empty">Loading reports...</div>
+    <div class="empty">正在加载训练报告...</div>
   </div>
 </div>
 <button class="add-btn" onclick="location.href='create.html'">+</button>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
-var supabaseUrl = 'https://tjdrzjucvwebclsfvgrr.supabase.co';
-var supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRqZHJ6anVjdndlYmNsc2Z2Z3JyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ1ODc0MDUsImV4cCI6MjA5MDE2MzQwNX0.74kAxC0LhBLHY-k-FI90MFvpGp_I3E5uLH1KNP6QRWc';
-var supabase = null;
-if (typeof window.Supabase !== 'undefined') {
-  supabase = window.Supabase.createClient(supabaseUrl, supabaseKey);
-}
+(function() {
+  var supabaseUrl = 'https://tjdrzjucvwebclsfvgrr.supabase.co';
+  var supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRqZHJ6anVjdndlYmNsc2Z2Z3JyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ1ODc0MDUsImV4cCI6MjA5MDE2MzQwNX0.74kAxC0LhBLHY-k-FI90MFvpGp_I3E5uLH1KNP6QRWc';
+  var supabase = null;
+  if (typeof window.Supabase !== 'undefined' && window.Supabase) {
+    supabase = window.Supabase.createClient(supabaseUrl, supabaseKey);
+  }
+  window._supabase = supabase;
+})();
 
-async function loadReports(filter) {
+function loadReports(filter) {
   var list = document.getElementById('report-list');
-  if (!supabase) { list.innerHTML = '<div class="empty">Supabase not configured</div>'; return; }
-  var result = await supabase.from('reports').select('*').order('created_at', { ascending: false });
-  if (result.error) { list.innerHTML = '<div class="empty">Load failed</div>'; return; }
-  var data = result.data || [];
-  if (data.length === 0) { list.innerHTML = '<div class="empty">No reports yet</div>'; return; }
-  list.innerHTML = data.map(function(r) {
-    return '<div class="report-card" onclick="location.href=\'coach.html?id=' + r.id + '\'">' +
-      '<div class="report-info"><div class="student">' + (r.student_name || 'Unknown') + '</div>' +
-      '<div class="meta"><span>Date: ' + (r.session_date || '-') + '</span><span>' + (r.duration || 60) + 'min</span><span>' + (r.goal || '-') + '</span></div></div>' +
-      '<span class="report-badge ' + (r.status === 'done' ? 'badge-done' : 'badge-pending') + '">' + (r.status === 'done' ? 'Done' : 'Pending') + '</span></div>';
-  }).join('');
+  var supabase = window._supabase;
+  if (!supabase) {
+    list.innerHTML = '<div class="empty">Supabase 未配置</div>';
+    return;
+  }
+  supabase.from('reports').select('*').order('created_at', { ascending: false }).then(function(result) {
+    if (result.error) {
+      list.innerHTML = '<div class="empty">加载失败: ' + result.error.message + '</div>';
+      return;
+    }
+    var data = result.data || [];
+    if (data.length === 0) {
+      list.innerHTML = '<div class="empty">暂无训练报告</div>';
+      return;
+    }
+    var filtered = filter === 'all' ? data : data.filter(function(r) { return filter === 'done' ? r.status === 'done' : r.status !== 'done'; });
+    list.innerHTML = filtered.map(function(r) {
+      return '<div class="report-card" onclick="location.href=\'coach.html?id=' + r.id + '\'">' +
+        '<div class="report-info"><div class="student">' + (r.student_name || '未知') + '</div>' +
+        '<div class="meta"><span>日期: ' + (r.session_date || '-') + '</span><span>' + (r.duration || 60) + '分钟</span><span>' + (r.goal || '-') + '</span></div></div>' +
+        '<span class="report-badge ' + (r.status === 'done' ? 'badge-done' : 'badge-pending') + '">' + (r.status === 'done' ? '已完成' : '待完成') + '</span></div>';
+    }).join('');
+  });
 }
 
 function showTab(filter) {
