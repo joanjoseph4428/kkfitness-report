@@ -1,1 +1,5 @@
-{"buildCommand":"node inject.js","installCommand":"npm install","framework":null}
+{
+  "buildCommand": "echo 'No build needed - static files'",
+  "installCommand": "npm install",
+  "framework": null
+}
