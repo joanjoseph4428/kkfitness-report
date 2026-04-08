@@ -45,51 +45,37 @@
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
-const SUPABASE_URL = '__SUPABASE_URL__';
-const SUPABASE_ANON_KEY = '__SUPABASE_ANON_KEY__';
-const { createClient } = window.Supabase || {};
-const supabase = (SUPABASE_URL && SUPABASE_ANON_KEY) ? createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
+var __SUPABASE_URL__ = 'https://tjdrzjucvwebclsfvgrr.supabase.co';
+var __SUPABASE_ANON_KEY__ = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRqZHJ6anVjdndlYmNsc2Z2Z3JyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ1ODc0MDUsImV4cCI6MjA5MDE2MzQwNX0.74kAxC0LhBLHY-k-FI90MFvpGp_I3E5uLH1KNP6QRWc';
+var supabase = null;
+if (typeof window.Supabase !== 'undefined') {
+  supabase = window.Supabase.createClient(__SUPABASE_URL__, __SUPABASE_ANON_KEY__);
+}
 
-async function loadReports(filter = 'all') {
-  const list = document.getElementById('report-list');
-  if (!supabase) {
-    list.innerHTML = '<div class="empty">鈿狅笍 Supabase 鏈厤缃紝璇锋鏌ョ幆澧冨彉閲?/div>';
-    return;
-  }
-  const { data, error } = await supabase.from('reports').select('*').order('created_at', { ascending: false });
-  if (error) { list.innerHTML = `<div class="empty">鍔犺浇澶辫触: ${error.message}</div>`; return; }
-  if (!data || data.length === 0) { list.innerHTML = '<div class="empty">鏆傛棤璁粌鎶ュ憡锛岀偣鍑?+ 鍒涘缓绗竴涓?/div>'; return; }
-  const filtered = filter === 'all' ? data : data.filter(r => filter === 'done' ? r.status === 'done' : r.status !== 'done');
-  list.innerHTML = filtered.map(r => `
-    <div class="report-card" onclick="location.href='coach.html?id=${r.id}'">
-      <div class="report-info">
-        <div class="student">${r.student_name || '鏈懡鍚嶅鍛?}</div>
-        <div class="meta">
-          <span>馃搮 ${r.session_date || '-'}</span>
-          <span>鈴?${r.duration || 60}鍒嗛挓</span>
-          <span>馃幆 ${r.goal || '-'}</span>
-        </div>
-      </div>
-      <span class="report-badge ${r.status === 'done' ? 'badge-done' : 'badge-pending'}">${r.status === 'done' ? '鉁?宸插彂' : '鈴?寰呭彂'}</span>
-    </div>
-  `).join('');
+async function loadReports(filter) {
+  var list = document.getElementById('report-list');
+  if (!supabase) { list.innerHTML = '<div class="empty">鈿狅笍 Supabase 鏈厤缃?/div>'; return; }
+  var result = await supabase.from('reports').select('*').order('created_at', { ascending: false });
+  if (result.error) { list.innerHTML = '<div class="empty">鍔犺浇澶辫触</div>'; return; }
+  var data = result.data || [];
+  if (data.length === 0) { list.innerHTML = '<div class="empty">鏆傛棤璁粌鎶ュ憡</div>'; return; }
+  var filtered = filter === 'all' ? data : data.filter(function(r) { return filter === 'done' ? r.status === 'done' : r.status !== 'done'; });
+  list.innerHTML = filtered.map(function(r) {
+    return '<div class="report-card" onclick="location.href=\'coach.html?id=' + r.id + '\'">' +
+      '<div class="report-info"><div class="student">' + (r.student_name || '鏈煡') + '</div>' +
+      '<div class="meta"><span>馃搮 ' + (r.session_date || '-') + '</span><span>鈴?' + (r.duration || 60) + '鍒嗛挓</span><span>馃幆 ' + (r.goal || '-') + '</span></div></div>' +
+      '<span class="report-badge ' + (r.status === 'done' ? 'badge-done' : 'badge-pending') + '">' + (r.status === 'done' ? '鉁?宸插彂' : '鈴?寰呭彂') + '</span></div>';
+  }).join('');
 }
 
 function showTab(filter) {
-  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.tab').forEach(function(t) { t.classList.remove('active'); });
   event.target.classList.add('active');
   loadReports(filter);
 }
 
 async function init() {
-  if (supabase) {
-    const { data } = await supabase.auth.getSession();
-    if (data.session) {
-      const user = data.session.user;
-      document.getElementById('coach-name').textContent = `鏁欑粌绔?路 ${user.email}`;
-    }
-  }
-  loadReports();
+  loadReports('all');
 }
 init();
 </script>
